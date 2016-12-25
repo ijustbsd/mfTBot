@@ -13,7 +13,7 @@ class MathBot(telepot.Bot):
 			f1 = open(path1, 'r', encoding = 'utf-8')
 			f2 = open(path2, 'r', encoding = 'utf-8')
 			return (f1.read().split('#\n'), f2.read().split('#\n'))
-		self.raspChisl, self.raspZnam = getRasp('./timetables/raspChisl.txt', './timetables/raspZnam.txt')
+		self.raspChisl, self.raspZnam = getRasp('timetables/raspChisl.txt', 'timetables/raspZnam.txt')
 		self.raspToDayTxt = (
 			'*Расписание на понедельник:*\n',
 			'*Расписание на вторник:*\n',

@@ -1,2 +1,5 @@
 VENV/
 __pycache__/
+mfTBot.sublime-project
+mfTBot.sublime-workspace
+config.py

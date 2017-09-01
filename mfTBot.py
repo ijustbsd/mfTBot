@@ -1,8 +1,8 @@
 # -*-coding: utf-8-*-
-from sys import argv
 from time import sleep
 import datetime
 import telepot
+import config
 
 
 class MathBot(telepot.Bot):
@@ -60,7 +60,7 @@ class MathBot(telepot.Bot):
         else:
             self.sendMessage(chatId, 'К сожалению, я тебя не понимаю \U0001f622')
 
-bot = MathBot(argv[1])
+bot = MathBot(config.TOKEN)
 bot.message_loop(bot.listener)
 while 1:
     sleep(10)

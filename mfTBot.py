@@ -47,11 +47,7 @@ class MathBot(telepot.helper.ChatHandler):
             keyboards = json.load(json_file)
         self.keyboard = keyboards["keyboard"]
         self.week_keyboard = keyboards["week_keyboard"]
-
-        with open('data/timetables/3.json') as json_file:
-            timetable = json.load(json_file)
-        self.num_sch = ['\n'.join(i) for i in timetable["numerator"]]
-        self.denom_sch = ['\n'.join(i) for i in timetable["denominator"]]
+        self.settings_keyboard = keyboards["settings_keyboard"]
 
         global records
         if self.id in records:
@@ -71,7 +67,7 @@ class MathBot(telepot.helper.ChatHandler):
     def add_user(self, user_id, course, group):
         with open('data/users.json') as json_file:
             users = json.load(json_file)
-        users[user_id] = {
+        users[str(user_id)] = {
             "course": course,
             "group": group
         }
@@ -83,6 +79,21 @@ class MathBot(telepot.helper.ChatHandler):
             users = json.load(json_file)
         return users[str(user_id)] if str(user_id) in users else False
 
+    def registration(self):
+        sent = self.sender.sendMessage(reg_msg_1, reply_markup=course_btns)
+        self.editor = telepot.helper.Editor(self.bot, sent)
+        self.edit_msg_ident = telepot.message_identifier(sent)
+
+    def load_schedule(self, user_id):
+        user = self.load_user(user_id)
+        course = user["course"]
+        group = user["group"]
+        with open('data/timetables/%s/%s.json' % (course, group)) as json_file:
+            schedule = json.load(json_file)
+        num_sch = ['\n'.join(i) for i in schedule["numerator"]]
+        denom_sch = ['\n'.join(i) for i in schedule["denominator"]]
+        return (num_sch, denom_sch)
+
     def answerer(self, user_id, cmd):
         if cmd == '/start':
             if not self.load_user(user_id):
@@ -90,58 +101,80 @@ class MathBot(telepot.helper.ChatHandler):
                     reg_msg_0,
                     reply_markup=ReplyKeyboardRemove()
                 )
-                sent = self.sender.sendMessage(
-                    reg_msg_1,
-                    reply_markup=course_btns
-                )
-                self.editor = telepot.helper.Editor(self.bot, sent)
-                self.edit_msg_ident = telepot.message_identifier(sent)
+                self.registration()
             else:
                 self.sender.sendMessage(start_msg, reply_markup=self.keyboard)
         elif cmd == self.keyboard['keyboard'][0][0]:
+            schedule = self.load_schedule(user_id)
             today = datetime.date.today()
             weekday = today.weekday()
             is_num = today.isocalendar()[1] % 2
-            rasp = self.num_sch[weekday] if is_num else self.denom_sch[weekday]
+            output = schedule[0][weekday] if is_num else schedule[1][weekday]
             self.sender.sendMessage(
-                '*Расписание на сегодня:*\n' + rasp,
+                '*Расписание на сегодня:*\n' + output,
                 'Markdown'
             )
-        elif cmd == self.keyboard['keyboard'][1][0]:
+        elif cmd == self.keyboard['keyboard'][0][1]:
+            schedule = self.load_schedule(user_id)
             tomorrow = datetime.date.today() + datetime.timedelta(days=1)
             weekday = tomorrow.weekday()
             is_num = tomorrow.isocalendar()[1] % 2
-            rasp = self.num_sch[weekday] if is_num else self.denom_sch[weekday]
+            output = schedule[0][weekday] if is_num else schedule[1][weekday]
             self.sender.sendMessage(
-                '*Расписание на завтра:*\n' + rasp,
+                '*Расписание на завтра:*\n' + output,
                 'Markdown'
             )
-        elif cmd == self.keyboard['keyboard'][2][0]:
+        elif cmd == self.keyboard['keyboard'][1][0]:
             self.sender.sendMessage(
                 'Выберите день недели:',
                 reply_markup=self.week_keyboard
             )
         elif cmd in listmerge(self.week_keyboard['keyboard']):
             index = listmerge(self.week_keyboard['keyboard']).index(cmd)
-            if self.num_sch[index] == self.denom_sch[index]:
+            schedule = self.load_schedule(user_id)
+            if schedule[0] == schedule[1]:
                 self.sender.sendMessage(
-                    days_schedule[index] + self.num_sch[index],
+                    days_schedule[index] + schedule[0][index],
                     'Markdown',
                     reply_markup=self.keyboard
                 )
             else:
                 self.sender.sendMessage(
-                    '%s*Числитель:*\n%s\n*Знаменатель:*\n%s' % (
+                    '%s*Числитель:*\n%s\n\n*Знаменатель:*\n%s' % (
                         days_schedule[index],
-                        self.num_sch[index],
-                        self.denom_sch[index]
+                        schedule[0][index],
+                        schedule[1][index]
                     ),
                     'Markdown',
                     reply_markup=self.keyboard
                 )
-        elif cmd == self.keyboard['keyboard'][3][0]:
+        elif cmd == self.keyboard['keyboard'][2][0]:
             self.sender.sendMessage(
                 bells_schedule,
+                'Markdown',
+                reply_markup=self.keyboard
+            )
+        elif cmd == self.keyboard['keyboard'][3][0]:
+            self.sender.sendMessage(
+                settings_msg,
+                'Markdown',
+                reply_markup=self.settings_keyboard
+            )
+        elif cmd == self.settings_keyboard['keyboard'][0][0]:
+            self.sender.sendMessage(
+                'Заполни данные ещё раз:',
+                reply_markup=ReplyKeyboardRemove()
+            )
+            self.registration()
+        elif cmd == self.settings_keyboard['keyboard'][1][0]:
+            self.sender.sendMessage(
+                feedback_msg,
+                'Markdown',
+                reply_markup=self.keyboard
+            )
+        elif cmd == self.settings_keyboard['keyboard'][2][0]:
+            self.sender.sendMessage(
+                '\U0001F519 Назад',
                 'Markdown',
                 reply_markup=self.keyboard
             )
@@ -164,19 +197,20 @@ class MathBot(telepot.helper.ChatHandler):
 
     def on_callback_query(self, msg):
         query, from_id, data = telepot.glance(msg, flavor='callback_query')
-        if data in ('1', '2', '3', '4'):
+        groups = ('11', '12', '21', '31', '32', '33', '41', '42', '51', '52')
+        if int(data) in range(1, 6):
             global course
             course = data
             self.cancel_last()
             self.sender.sendMessage(data)
-            btns = (first_btns, second_btns, third_btns, fourth_btns)
+            btns = (first_btns, second_btns, third_btns, fourth_btns, fifth_btns)
             sent = self.sender.sendMessage(
                 reg_msg_2,
                 reply_markup=btns[int(course) - 1]
             )
             self.editor = telepot.helper.Editor(self.bot, sent)
             self.edit_msg_ident = telepot.message_identifier(sent)
-        elif data in ('11', '12', '21', '31', '32', '33', '41', '51', '52'):
+        elif data in groups:
             self.add_user(from_id, course, data)
             self.cancel_last()
             if int(course) > 2:

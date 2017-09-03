@@ -3,7 +3,8 @@ course_btns = InlineKeyboardMarkup(inline_keyboard=[[
     InlineKeyboardButton(text='1', callback_data='1'),
     InlineKeyboardButton(text='2', callback_data='2'),
     InlineKeyboardButton(text='3', callback_data='3'),
-    InlineKeyboardButton(text='4', callback_data='4')
+    InlineKeyboardButton(text='4', callback_data='4'),
+    InlineKeyboardButton(text='5', callback_data='5')
 ]])
 
 first_btns = InlineKeyboardMarkup(inline_keyboard=[
@@ -84,5 +85,12 @@ fourth_btns = InlineKeyboardMarkup(inline_keyboard=[
     ],
     [
         InlineKeyboardButton(text='КТФ', callback_data='41')
+    ]
+])
+
+fifth_btns = InlineKeyboardMarkup(inline_keyboard=[
+    [
+        InlineKeyboardButton(text='КТФ', callback_data='41'),
+        InlineKeyboardButton(text='КМА МАиП', callback_data='42')
     ]
 ])

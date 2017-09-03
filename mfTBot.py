@@ -132,7 +132,7 @@ class MathBot(telepot.helper.ChatHandler):
         elif cmd in listmerge(self.week_keyboard['keyboard']):
             index = listmerge(self.week_keyboard['keyboard']).index(cmd)
             schedule = self.load_schedule(user_id)
-            if schedule[0] == schedule[1]:
+            if schedule[0][index] == schedule[1][index]:
                 self.sender.sendMessage(
                     days_schedule[index] + schedule[0][index],
                     'Markdown',

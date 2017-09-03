@@ -1,6 +1,7 @@
 # -*-coding: utf-8-*-
 from time import sleep
 import datetime
+import json
 import telepot
 import config
 
@@ -8,8 +9,11 @@ import config
 class MathBot(telepot.Bot):
     def __init__(self, token):
         super().__init__(token)
-        self.keyboard = {'keyboard': [['\U0001f4d8 Расписание на сегодня'], ['\U0001f4d7 Расписание на завтра'], ['\U0001f4c5 Расписание на другие дни'], ['\U0001f514 Расписание звонков']]}
-        self.weekKeyboard = {'keyboard': [['Пн', 'Вт', 'Ср', 'Чт', 'Пт'], ['Суббота'], ['Воскресенье']]}
+
+        with open('data/keyboards.json') as json_file:
+            keyboards = json.load(json_file)
+        self.keyboard = keyboards["keyboard"]
+        self.week_keyboard = keyboards["week_keyboard"]
 
         def getRasp(path1, path2):
             f1 = open(path1, 'r', encoding='utf-8')
@@ -41,7 +45,7 @@ class MathBot(telepot.Bot):
             rasp = self.raspChisl[weekday] if tomorrow.isocalendar()[1] % 2 else self.raspZnam[weekday]
             self.sendMessage(chatId, '*Расписание на завтра:*\n' + rasp, 'Markdown')
         elif cmd == self.keyboard['keyboard'][2][0]:
-            self.sendMessage(chatId, 'Выберите день недели:', reply_markup=self.weekKeyboard)
+            self.sendMessage(chatId, 'Выберите день недели:', reply_markup=self.week_keyboard)
         elif cmd in ('Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Суббота', 'Воскресенье'):
             index = ('Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Суббота', 'Воскресенье').index(cmd)
             if self.raspChisl[index] == self.raspZnam[index]:

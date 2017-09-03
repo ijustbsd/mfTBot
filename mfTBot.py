@@ -3,6 +3,8 @@ from time import sleep
 import datetime
 import json
 import telepot
+
+from answers import *
 import config
 
 
@@ -20,20 +22,10 @@ class MathBot(telepot.Bot):
             f2 = open(path2, 'r', encoding='utf-8')
             return (f1.read().split('#\n'), f2.read().split('#\n'))
         self.raspChisl, self.raspZnam = getRasp('timetables/raspChisl.txt', 'timetables/raspZnam.txt')
-        self.raspToDayTxt = (
-            '*Расписание на понедельник:*\n',
-            '*Расписание на вторник:*\n',
-            '*Расписание на среду:*\n',
-            '*Расписание на четверг:*\n',
-            '*Расписание на пятницу:*\n',
-            '*Расписание на субботу:*\n',
-            '*Расписание на воскресенье:*\n'
-        )
-        self.raspZvon = '*Расписание звонков:*\n1. 8:00 - 9:35\n2. 9:45 - 11:20\n3. 11:30 - 13:05\n4. 13:25 - 15:00\n5. 15:10 - 16:45'
 
     def answerer(self, chatId, cmd):
         if cmd == '/start':
-            self.sendMessage(chatId, 'Привет! Я помогу тебе узнать расписание, обращайся \U0001f609', reply_markup=self.keyboard)
+            self.sendMessage(chatId, start_msg, reply_markup=self.keyboard)
         elif cmd == self.keyboard['keyboard'][0][0]:
             today = datetime.date.today()
             weekday = today.weekday()
@@ -49,20 +41,20 @@ class MathBot(telepot.Bot):
         elif cmd in ('Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Суббота', 'Воскресенье'):
             index = ('Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Суббота', 'Воскресенье').index(cmd)
             if self.raspChisl[index] == self.raspZnam[index]:
-                self.sendMessage(chatId, self.raspToDayTxt[index] + self.raspChisl[index], 'Markdown', reply_markup=self.keyboard)
+                self.sendMessage(chatId, days_schedule[index] + self.raspChisl[index], 'Markdown', reply_markup=self.keyboard)
             else:
-                self.sendMessage(chatId, self.raspToDayTxt[index] + '*Числитель:*\n' + self.raspChisl[index] + '\n*Знаменатель:*\n' + self.raspZnam[index], 'Markdown', reply_markup=self.keyboard)
+                self.sendMessage(chatId, days_schedule[index] + '*Числитель:*\n' + self.raspChisl[index] + '\n*Знаменатель:*\n' + self.raspZnam[index], 'Markdown', reply_markup=self.keyboard)
         elif cmd == self.keyboard['keyboard'][3][0]:
-            self.sendMessage(chatId, self.raspZvon, 'Markdown', reply_markup=self.keyboard)
+            self.sendMessage(chatId, bells_schedule, 'Markdown', reply_markup=self.keyboard)
         else:
-            self.sendMessage(chatId, 'К сожалению, я тебя не понимаю \U0001f622')
+            self.sendMessage(chatId, error_msg)
 
     def listener(self, msg):
         contentType, *args, chatId = telepot.glance(msg)
         if contentType == 'text':
             self.answerer(chatId, msg['text'])
         else:
-            self.sendMessage(chatId, 'К сожалению, я тебя не понимаю \U0001f622')
+            self.sendMessage(chatId, error_msg)
 
 bot = MathBot(config.TOKEN)
 bot.message_loop(bot.listener)

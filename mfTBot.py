@@ -3,6 +3,11 @@ from time import sleep
 import datetime
 import json
 import telepot
+import telepot.helper
+from telepot.loop import MessageLoop
+from telepot.delegate import (
+    per_chat_id, create_open, pave_event_space, include_callback_query_chat_id
+)
 
 from answers import *
 import config
@@ -16,9 +21,9 @@ def listmerge(lst):
     return merge_lists
 
 
-class MathBot(telepot.Bot):
-    def __init__(self, token):
-        super().__init__(token)
+class MathBot(telepot.helper.ChatHandler):
+    def __init__(self, *args, **kwargs):
+        super(MathBot, self).__init__(*args, **kwargs)
 
         with open('data/keyboards.json') as json_file:
             keyboards = json.load(json_file)
@@ -30,16 +35,15 @@ class MathBot(telepot.Bot):
         self.num_sch = ['\n'.join(i) for i in timetable["numerator"]]
         self.denom_sch = ['\n'.join(i) for i in timetable["denominator"]]
 
-    def answerer(self, chatId, cmd):
+    def answerer(self, user_id, cmd):
         if cmd == '/start':
-            self.sendMessage(chatId, start_msg, reply_markup=self.keyboard)
+            self.sender.sendMessage(start_msg, reply_markup=keyboard)
         elif cmd == self.keyboard['keyboard'][0][0]:
             today = datetime.date.today()
             weekday = today.weekday()
             is_num = today.isocalendar()[1] % 2
             rasp = self.num_sch[weekday] if is_num else self.denom_sch[weekday]
-            self.sendMessage(
-                chatId,
+            self.sender.sendMessage(
                 '*Расписание на сегодня:*\n' + rasp,
                 'Markdown'
             )
@@ -48,29 +52,25 @@ class MathBot(telepot.Bot):
             weekday = tomorrow.weekday()
             is_num = tomorrow.isocalendar()[1] % 2
             rasp = self.num_sch[weekday] if is_num else self.denom_sch[weekday]
-            self.sendMessage(
-                chatId,
+            self.sender.sendMessage(
                 '*Расписание на завтра:*\n' + rasp,
                 'Markdown'
             )
         elif cmd == self.keyboard['keyboard'][2][0]:
-            self.sendMessage(
-                chatId,
+            self.sender.sendMessage(
                 'Выберите день недели:',
                 reply_markup=self.week_keyboard
             )
         elif cmd in listmerge(self.week_keyboard['keyboard']):
             index = listmerge(self.week_keyboard['keyboard']).index(cmd)
             if self.num_sch[index] == self.denom_sch[index]:
-                self.sendMessage(
-                    chatId,
+                self.sender.sendMessage(
                     days_schedule[index] + self.num_sch[index],
                     'Markdown',
                     reply_markup=self.keyboard
                 )
             else:
-                self.sendMessage(
-                    chatId,
+                self.sender.sendMessage(
                     '%s*Числитель:*\n%s\n*Знаменатель:*\n%s' % (
                         days_schedule[index],
                         self.num_sch[index],
@@ -80,23 +80,33 @@ class MathBot(telepot.Bot):
                     reply_markup=self.keyboard
                 )
         elif cmd == self.keyboard['keyboard'][3][0]:
-            self.sendMessage(
-                chatId,
+            self.sender.sendMessage(
                 bells_schedule,
                 'Markdown',
                 reply_markup=self.keyboard
             )
         else:
-            self.sendMessage(chatId, error_msg)
+            self.sender.sendMessage(error_msg)
 
-    def listener(self, msg):
-        contentType, *args, chatId = telepot.glance(msg)
-        if contentType == 'text':
-            self.answerer(chatId, msg['text'])
+    def on_chat_message(self, msg):
+        content_type = telepot.glance(msg)[0]
+        user_id = telepot.glance(msg)[2]
+        if content_type == 'text':
+            self.answerer(user_id, msg['text'])
         else:
-            self.sendMessage(chatId, error_msg)
+            self.sender.sendMessage(error_msg)
 
-bot = MathBot(config.TOKEN)
-bot.message_loop(bot.listener)
+bot = telepot.DelegatorBot(config.TOKEN, [
+    include_callback_query_chat_id(
+        pave_event_space())(
+            per_chat_id(types=['private']),
+            create_open,
+            MathBot,
+            timeout=10
+        )
+    ]
+)
+MessageLoop(bot).run_as_thread()
+
 while 1:
     sleep(10)

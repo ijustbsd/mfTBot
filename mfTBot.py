@@ -17,11 +17,10 @@ class MathBot(telepot.Bot):
         self.keyboard = keyboards["keyboard"]
         self.week_keyboard = keyboards["week_keyboard"]
 
-        def getRasp(path1, path2):
-            f1 = open(path1, 'r', encoding='utf-8')
-            f2 = open(path2, 'r', encoding='utf-8')
-            return (f1.read().split('#\n'), f2.read().split('#\n'))
-        self.raspChisl, self.raspZnam = getRasp('timetables/raspChisl.txt', 'timetables/raspZnam.txt')
+        with open('data/timetables/3.json') as json_file:
+            timetable = json.load(json_file)
+        self.raspChisl = ['\n'.join(i) for i in timetable["numerator"]]
+        self.raspZnam = ['\n'.join(i) for i in timetable["denominator"]]
 
     def answerer(self, chatId, cmd):
         if cmd == '/start':

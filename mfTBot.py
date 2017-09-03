@@ -5,11 +5,13 @@ import json
 import telepot
 import telepot.helper
 from telepot.loop import MessageLoop
+from telepot.namedtuple import ReplyKeyboardRemove
 from telepot.delegate import (
     per_chat_id, create_open, pave_event_space, include_callback_query_chat_id
 )
 
 from answers import *
+from inline_btns import *
 import config
 
 
@@ -19,6 +21,22 @@ def listmerge(lst):
         for item in l:
             merge_lists.append(item)
     return merge_lists
+
+
+def gr_to_dir(group):
+    directions = {
+        "11": "КАТМА",
+        "12": "КУЧП",
+        "21": "КММ",
+        "31": "КМА ММЭ (3.1)",
+        "32": "КМА ММЭ (3.2)",
+        "33": "КФА",
+        "41": "КТФ",
+        "42": "КМА МАиП"
+    }
+    return directions[group]
+
+records = telepot.helper.SafeDict()
 
 
 class MathBot(telepot.helper.ChatHandler):
@@ -35,9 +53,51 @@ class MathBot(telepot.helper.ChatHandler):
         self.num_sch = ['\n'.join(i) for i in timetable["numerator"]]
         self.denom_sch = ['\n'.join(i) for i in timetable["denominator"]]
 
+        global records
+        if self.id in records:
+            self.count, self.edit_msg_ident = records[self.id]
+            if self.edit_msg_ident:
+                self.editor = telepot.helper.Editor(
+                    self.bot,
+                    self.edit_msg_ident
+                )
+            else:
+                None
+        else:
+            self.count = 0
+            self.edit_msg_ident = None
+            self.editor = None
+
+    def add_user(self, user_id, course, group):
+        with open('data/users.json') as json_file:
+            users = json.load(json_file)
+        users[user_id] = {
+            "course": course,
+            "group": group
+        }
+        with open('data/users.json', 'w') as json_file:
+            json.dump(users, json_file, ensure_ascii=False, indent=4)
+
+    def load_user(self, user_id):
+        with open('data/users.json') as json_file:
+            users = json.load(json_file)
+        return users[str(user_id)] if str(user_id) in users else False
+
     def answerer(self, user_id, cmd):
         if cmd == '/start':
-            self.sender.sendMessage(start_msg, reply_markup=keyboard)
+            if not self.load_user(user_id):
+                self.sender.sendMessage(
+                    reg_msg_0,
+                    reply_markup=ReplyKeyboardRemove()
+                )
+                sent = self.sender.sendMessage(
+                    reg_msg_1,
+                    reply_markup=course_btns
+                )
+                self.editor = telepot.helper.Editor(self.bot, sent)
+                self.edit_msg_ident = telepot.message_identifier(sent)
+            else:
+                self.sender.sendMessage(start_msg, reply_markup=self.keyboard)
         elif cmd == self.keyboard['keyboard'][0][0]:
             today = datetime.date.today()
             weekday = today.weekday()
@@ -88,6 +148,12 @@ class MathBot(telepot.helper.ChatHandler):
         else:
             self.sender.sendMessage(error_msg)
 
+    def cancel_last(self):
+        if self.editor:
+            self.editor.editMessageReplyMarkup(reply_markup=None)
+            self.editor = None
+            self.edit_msg_ident = None
+
     def on_chat_message(self, msg):
         content_type = telepot.glance(msg)[0]
         user_id = telepot.glance(msg)[2]
@@ -95,6 +161,34 @@ class MathBot(telepot.helper.ChatHandler):
             self.answerer(user_id, msg['text'])
         else:
             self.sender.sendMessage(error_msg)
+
+    def on_callback_query(self, msg):
+        query, from_id, data = telepot.glance(msg, flavor='callback_query')
+        if data in ('1', '2', '3', '4'):
+            global course
+            course = data
+            self.cancel_last()
+            self.sender.sendMessage(data)
+            btns = (first_btns, second_btns, third_btns, fourth_btns)
+            sent = self.sender.sendMessage(
+                reg_msg_2,
+                reply_markup=btns[int(course) - 1]
+            )
+            self.editor = telepot.helper.Editor(self.bot, sent)
+            self.edit_msg_ident = telepot.message_identifier(sent)
+        elif data in ('11', '12', '21', '31', '32', '33', '41', '51', '52'):
+            self.add_user(from_id, course, data)
+            self.cancel_last()
+            if int(course) > 2:
+                self.sender.sendMessage(gr_to_dir(data))
+            else:
+                self.sender.sendMessage('.'.join(data))
+            self.sender.sendMessage(reg_msg_3, reply_markup=self.keyboard)
+            self.close()
+
+    def on_close(self, ex):
+        global records
+        records[self.id] = (self.count, self.edit_msg_ident)
 
 bot = telepot.DelegatorBot(config.TOKEN, [
     include_callback_query_chat_id(

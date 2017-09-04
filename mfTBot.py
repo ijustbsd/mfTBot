@@ -113,7 +113,8 @@ class MathBot(telepot.helper.ChatHandler):
             output = schedule[0][weekday] if is_num else schedule[1][weekday]
             self.sender.sendMessage(
                 '*Расписание на сегодня:*\n' + output,
-                'Markdown'
+                'Markdown',
+                reply_markup=self.keyboard
             )
         elif cmd == self.keyboard['keyboard'][0][1]:
             schedule = self.load_schedule(user_id)
@@ -123,7 +124,8 @@ class MathBot(telepot.helper.ChatHandler):
             output = schedule[0][weekday] if is_num else schedule[1][weekday]
             self.sender.sendMessage(
                 '*Расписание на завтра:*\n' + output,
-                'Markdown'
+                'Markdown',
+                reply_markup=self.keyboard
             )
         elif cmd == self.keyboard['keyboard'][1][0]:
             self.sender.sendMessage(
@@ -186,7 +188,7 @@ class MathBot(telepot.helper.ChatHandler):
                 reply_markup=self.keyboard
             )
         else:
-            self.sender.sendMessage(error_msg)
+            self.sender.sendMessage(error_msg, reply_markup=self.keyboard)
 
     def cancel_last(self):
         if self.editor:
@@ -200,7 +202,7 @@ class MathBot(telepot.helper.ChatHandler):
         if content_type == 'text':
             self.answerer(user_id, msg['text'])
         else:
-            self.sender.sendMessage(error_msg)
+            self.sender.sendMessage(error_msg, reply_markup=self.keyboard)
 
     def on_callback_query(self, msg):
         query, from_id, data = telepot.glance(msg, flavor='callback_query')

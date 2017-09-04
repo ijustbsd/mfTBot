@@ -48,7 +48,7 @@ class MathBot(telepot.helper.ChatHandler):
             keyboards = json.load(json_file)
         self.keyboard = keyboards["keyboard"]
         self.week_keyboard = keyboards["week_keyboard"]
-        self.settings_keyboard = keyboards["settings_keyboard"]
+        self.other_keyboard = keyboards["other_keyboard"]
 
         global records
         if self.id in records:
@@ -159,21 +159,27 @@ class MathBot(telepot.helper.ChatHandler):
             self.sender.sendMessage(
                 settings_msg,
                 'Markdown',
-                reply_markup=self.settings_keyboard
+                reply_markup=self.other_keyboard
             )
-        elif cmd == self.settings_keyboard['keyboard'][0][0]:
+        elif cmd == self.other_keyboard['keyboard'][0][0]:
             self.sender.sendMessage(
                 'Заполни данные ещё раз:',
                 reply_markup=ReplyKeyboardRemove()
             )
             self.registration()
-        elif cmd == self.settings_keyboard['keyboard'][1][0]:
+        elif cmd == self.other_keyboard['keyboard'][1][0]:
+            self.sender.sendMessage(
+                updates_msg,
+                'Markdown',
+                reply_markup=self.keyboard
+            )
+        elif cmd == self.other_keyboard['keyboard'][2][0]:
             self.sender.sendMessage(
                 feedback_msg,
                 'Markdown',
                 reply_markup=self.keyboard
             )
-        elif cmd == self.settings_keyboard['keyboard'][2][0]:
+        elif cmd == self.other_keyboard['keyboard'][3][0]:
             self.sender.sendMessage(
                 '\U0001F519 Назад',
                 'Markdown',

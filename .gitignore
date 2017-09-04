@@ -4,3 +4,4 @@ mfTBot.sublime-project
 mfTBot.sublime-workspace
 config.py
 /data/users.json
+/data/stats.json

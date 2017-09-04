@@ -116,6 +116,8 @@ class MathBot(telepot.helper.ChatHandler):
                     reply_markup=ReplyKeyboardRemove()
                 )
                 self.registration()
+                users, messages = self.load_stats()
+                self.save_stats(users + 1, messages)
             else:
                 self.sender.sendMessage(start_msg, reply_markup=self.keyboard)
         elif cmd == self.keyboard['keyboard'][0][0]:
@@ -250,8 +252,6 @@ class MathBot(telepot.helper.ChatHandler):
             self.edit_msg_ident = telepot.message_identifier(sent)
         elif data in groups:
             self.add_user(from_id, course, data)
-            users, messages = self.load_stats()
-            self.save_stats(users + 1, messages)
             self.cancel_last()
             if int(course) > 2:
                 self.sender.sendMessage(gr_to_dir(data))

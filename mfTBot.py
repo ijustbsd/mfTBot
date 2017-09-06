@@ -11,6 +11,8 @@ from telepot.delegate import (
     per_chat_id, create_open, pave_event_space, include_callback_query_chat_id
 )
 
+from libs.stats import update_stats, load_stats
+
 from answers import *
 from inline_btns import *
 import config
@@ -95,19 +97,6 @@ class MathBot(telepot.helper.ChatHandler):
         denom_sch = ['\n'.join(i) for i in schedule["denominator"]]
         return (num_sch, denom_sch)
 
-    def save_stats(self, users, messages):
-        stats = {
-            "users": int(users),
-            "messages": int(messages)
-        }
-        with open('data/stats.json', 'w') as json_file:
-            json.dump(stats, json_file, ensure_ascii=False)
-
-    def load_stats(self):
-        with open('data/stats.json') as json_file:
-            stats = json.load(json_file)
-        return (stats["users"], stats["messages"])
-
     def answerer(self, user_id, cmd):
         if cmd == '/start':
             if not self.load_user(user_id):
@@ -116,8 +105,7 @@ class MathBot(telepot.helper.ChatHandler):
                     reply_markup=ReplyKeyboardRemove()
                 )
                 self.registration()
-                users, messages = self.load_stats()
-                self.save_stats(users + 1, messages)
+                update_stats(new_user=1)
             else:
                 self.sender.sendMessage(start_msg, reply_markup=self.keyboard)
         elif cmd == self.keyboard['keyboard'][0][0]:
@@ -131,8 +119,7 @@ class MathBot(telepot.helper.ChatHandler):
                 'Markdown',
                 reply_markup=self.keyboard
             )
-            users, messages = self.load_stats()
-            self.save_stats(users, messages + 1)
+            update_stats(new_msg=1)
         elif cmd == self.keyboard['keyboard'][0][1]:
             schedule = self.load_schedule(user_id)
             tomorrow = datetime.date.today() + datetime.timedelta(days=1)
@@ -144,8 +131,7 @@ class MathBot(telepot.helper.ChatHandler):
                 'Markdown',
                 reply_markup=self.keyboard
             )
-            users, messages = self.load_stats()
-            self.save_stats(users, messages + 1)
+            update_stats(new_msg=1)
         elif cmd == self.keyboard['keyboard'][1][0]:
             self.sender.sendMessage(
                 'Выберите день недели:',
@@ -170,16 +156,14 @@ class MathBot(telepot.helper.ChatHandler):
                     'Markdown',
                     reply_markup=self.keyboard
                 )
-            users, messages = self.load_stats()
-            self.save_stats(users, messages + 1)
+            update_stats(new_msg=1)
         elif cmd == self.keyboard['keyboard'][2][0]:
             self.sender.sendMessage(
                 bells_schedule,
                 'Markdown',
                 reply_markup=self.keyboard
             )
-            users, messages = self.load_stats()
-            self.save_stats(users, messages + 1)
+            update_stats(new_msg=1)
         elif cmd == self.keyboard['keyboard'][3][0]:
             self.sender.sendMessage(
                 settings_msg,
@@ -211,7 +195,7 @@ class MathBot(telepot.helper.ChatHandler):
                 reply_markup=self.keyboard
             )
         elif cmd == '/stats' and str(user_id) in config.admins:
-            users, messages = self.load_stats()
+            users, messages = load_stats()
             self.sender.sendMessage(
                 '*Статистика:*\nПользователей: %d\nСообщений: %d' % (
                     users, messages),

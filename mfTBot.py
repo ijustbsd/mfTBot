@@ -12,6 +12,7 @@ from telepot.delegate import (
 )
 
 from libs.stats import update_stats, load_stats
+from libs.users import add_user, load_user
 
 from answers import *
 from inline_btns import *
@@ -67,28 +68,13 @@ class MathBot(telepot.helper.ChatHandler):
             self.edit_msg_ident = None
             self.editor = None
 
-    def add_user(self, user_id, course, group):
-        with open('data/users.json') as json_file:
-            users = json.load(json_file)
-        users[str(user_id)] = {
-            "course": course,
-            "group": group
-        }
-        with open('data/users.json', 'w') as json_file:
-            json.dump(users, json_file, ensure_ascii=False)
-
-    def load_user(self, user_id):
-        with open('data/users.json') as json_file:
-            users = json.load(json_file)
-        return users[str(user_id)] if str(user_id) in users else False
-
     def registration(self):
         sent = self.sender.sendMessage(reg_msg_1, reply_markup=course_btns)
         self.editor = telepot.helper.Editor(self.bot, sent)
         self.edit_msg_ident = telepot.message_identifier(sent)
 
     def load_schedule(self, user_id):
-        user = self.load_user(user_id)
+        user = load_user(user_id)
         course = user["course"]
         group = user["group"]
         with open('data/timetables/%s/%s.json' % (course, group)) as json_file:
@@ -99,7 +85,7 @@ class MathBot(telepot.helper.ChatHandler):
 
     def answerer(self, user_id, cmd):
         if cmd == '/start':
-            if not self.load_user(user_id):
+            if not load_user(user_id):
                 self.sender.sendMessage(
                     reg_msg_0,
                     reply_markup=ReplyKeyboardRemove()
@@ -222,8 +208,8 @@ class MathBot(telepot.helper.ChatHandler):
     def on_callback_query(self, msg):
         query, from_id, data = telepot.glance(msg, flavor='callback_query')
         groups = ('11', '12', '21', '31', '32', '33', '41', '42', '51', '52')
+        global course
         if int(data) in range(1, 6):
-            global course
             course = data
             self.cancel_last()
             self.sender.sendMessage(data)
@@ -235,7 +221,7 @@ class MathBot(telepot.helper.ChatHandler):
             self.editor = telepot.helper.Editor(self.bot, sent)
             self.edit_msg_ident = telepot.message_identifier(sent)
         elif data in groups:
-            self.add_user(from_id, course, data)
+            add_user(from_id, course, data)
             self.cancel_last()
             if int(course) > 2:
                 self.sender.sendMessage(gr_to_dir(data))

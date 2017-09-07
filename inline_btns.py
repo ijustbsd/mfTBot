@@ -81,7 +81,7 @@ fourth_btns = InlineKeyboardMarkup(inline_keyboard=[
         InlineKeyboardButton(text='КММ', callback_data='21')
     ],
     [
-        InlineKeyboardButton(text='КМА ММЭ (3.1)', callback_data='31'),
+        InlineKeyboardButton(text='КМА ММЭ', callback_data='31'),
         InlineKeyboardButton(text='КМА МАиП', callback_data='42'),
         InlineKeyboardButton(text='КФА', callback_data='33')
     ],

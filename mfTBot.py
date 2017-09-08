@@ -15,7 +15,7 @@ from libs.users import add_user, load_user
 from libs.stats import update_stats, load_stats
 from libs.schedule import today_schedule, week_schedule, bells_schedule
 from answers import *
-from inline_btns import *
+from inline_btns import course_btns, group_btns
 import config
 
 
@@ -68,10 +68,31 @@ class MathBot(telepot.helper.ChatHandler):
             self.edit_msg_ident = None
             self.editor = None
 
-    def registration(self):
-        sent = self.sender.sendMessage(reg_msg_1, reply_markup=course_btns)
-        self.editor = telepot.helper.Editor(self.bot, sent)
-        self.edit_msg_ident = telepot.message_identifier(sent)
+    def registration(self, user_id, course=None, group=None):
+        if course:
+            self.cancel_last()
+            self.sender.sendMessage(course)
+            add_user(user_id, course, "")
+            sent = self.sender.sendMessage(
+                reg_msg_2,
+                reply_markup=group_btns[int(course) - 1]
+            )
+            self.editor = telepot.helper.Editor(self.bot, sent)
+            self.edit_msg_ident = telepot.message_identifier(sent)
+        elif group:
+            course = load_user(user_id)["course"]
+            self.cancel_last()
+            if int(course) > 2:
+                self.sender.sendMessage(gr_to_dir(group))
+            else:
+                self.sender.sendMessage('.'.join(group))
+            add_user(user_id, course, group)
+            self.sender.sendMessage(reg_msg_3, reply_markup=self.keyboard)
+            self.close()
+        else:
+            sent = self.sender.sendMessage(reg_msg_1, reply_markup=course_btns)
+            self.editor = telepot.helper.Editor(self.bot, sent)
+            self.edit_msg_ident = telepot.message_identifier(sent)
 
     def answerer(self, user_id, cmd):
         if cmd == '/start':
@@ -80,7 +101,7 @@ class MathBot(telepot.helper.ChatHandler):
                     reg_msg_0,
                     reply_markup=ReplyKeyboardRemove()
                 )
-                self.registration()
+                self.registration(user_id)
                 update_stats(new_user=1)
             else:
                 self.sender.sendMessage(start_msg, reply_markup=self.keyboard)
@@ -129,7 +150,7 @@ class MathBot(telepot.helper.ChatHandler):
                 again_msg,
                 reply_markup=ReplyKeyboardRemove()
             )
-            self.registration()
+            self.registration(user_id)
         elif cmd == self.other_keyboard['keyboard'][1][0]:
             self.sender.sendMessage(
                 updates_msg,
@@ -176,27 +197,10 @@ class MathBot(telepot.helper.ChatHandler):
     def on_callback_query(self, msg):
         query, from_id, data = telepot.glance(msg, flavor='callback_query')
         groups = ('11', '12', '21', '31', '32', '33', '41', '42', '51', '52')
-        global course
         if int(data) in range(1, 6):
-            course = data
-            self.cancel_last()
-            self.sender.sendMessage(data)
-            btns = (first_btns, second_btns, third_btns, fourth_btns, fifth_btns)
-            sent = self.sender.sendMessage(
-                reg_msg_2,
-                reply_markup=btns[int(course) - 1]
-            )
-            self.editor = telepot.helper.Editor(self.bot, sent)
-            self.edit_msg_ident = telepot.message_identifier(sent)
+            self.registration(from_id, course=data)
         elif data in groups:
-            add_user(from_id, course, data)
-            self.cancel_last()
-            if int(course) > 2:
-                self.sender.sendMessage(gr_to_dir(data))
-            else:
-                self.sender.sendMessage('.'.join(data))
-            self.sender.sendMessage(reg_msg_3, reply_markup=self.keyboard)
-            self.close()
+            self.registration(from_id, group=data)
 
     def on_close(self, ex):
         global records

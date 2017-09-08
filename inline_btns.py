@@ -96,3 +96,5 @@ fifth_btns = InlineKeyboardMarkup(inline_keyboard=[
         InlineKeyboardButton(text='КМА МАиП', callback_data='42')
     ]
 ])
+
+group_btns = (first_btns, second_btns, third_btns, fourth_btns, fifth_btns)

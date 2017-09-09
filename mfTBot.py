@@ -13,7 +13,10 @@ from telepot.delegate import (
 
 from libs.users import add_user, load_user
 from libs.stats import update_stats, load_stats
-from libs.schedule import today_schedule, week_schedule, bells_schedule
+from libs.schedule import (
+    today_schedule, week_schedule, bells_schedule, gr_to_dir, schedule_title,
+    days_schedule
+)
 from answers import *
 from inline_btns import course_btns, group_btns
 import config
@@ -25,20 +28,6 @@ def listmerge(lst):
         for item in l:
             merge_lists.append(item)
     return merge_lists
-
-
-def gr_to_dir(group):
-    directions = {
-        "11": "КАТМА",
-        "12": "КУЧП",
-        "21": "КММ",
-        "31": "КМА ММЭ (3.1)",
-        "32": "КМА ММЭ (3.2)",
-        "33": "КФА",
-        "41": "КТФ",
-        "42": "КМА МАиП"
-    }
-    return directions[group]
 
 records = telepot.helper.SafeDict()
 
@@ -106,18 +95,22 @@ class MathBot(telepot.helper.ChatHandler):
             else:
                 self.sender.sendMessage(start_msg, reply_markup=self.keyboard)
         elif cmd == self.keyboard['keyboard'][0][0]:
-            self.sender.sendMessage(
-                '*Расписание на сегодня:*\n' + today_schedule(user_id),
-                'Markdown',
-                reply_markup=self.keyboard
-            )
+            titles = schedule_title(user_id)
+            for s, t in zip(today_schedule(user_id), titles):
+                self.sender.sendMessage(
+                    '*Расписание на сегодня:\n(%s)*\n%s' % (t, s),
+                    'Markdown',
+                    reply_markup=self.keyboard
+                )
             update_stats(new_msg=1)
         elif cmd == self.keyboard['keyboard'][0][1]:
-            self.sender.sendMessage(
-                '*Расписание на завтра:*\n' + today_schedule(user_id, 1),
-                'Markdown',
-                reply_markup=self.keyboard
-            )
+            titles = schedule_title(user_id)
+            for s, t in zip(today_schedule(user_id, 1), titles):
+                self.sender.sendMessage(
+                    '*Расписание на сегодня:\n(%s)*\n%s' % (t, s),
+                    'Markdown',
+                    reply_markup=self.keyboard
+                )
             update_stats(new_msg=1)
         elif cmd == self.keyboard['keyboard'][1][0]:
             self.sender.sendMessage(
@@ -126,8 +119,12 @@ class MathBot(telepot.helper.ChatHandler):
             )
         elif cmd in listmerge(self.week_keyboard['keyboard']):
             index = listmerge(self.week_keyboard['keyboard']).index(cmd)
+            titles = schedule_title(user_id)
+            output = days_schedule[index] + '\n'
+            for s, t in zip(week_schedule(user_id, index), titles):
+                output += '*%s*\n%s\n\n' % (t, s)
             self.sender.sendMessage(
-                week_schedule(user_id, index),
+                output,
                 'Markdown',
                 reply_markup=self.keyboard
             )

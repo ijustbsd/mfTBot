@@ -29,32 +29,69 @@ bells_schedule = """
 """
 
 
+def gr_to_dir(group):
+    directions = {
+        "11": "КАТМА",
+        "12": "КУЧП",
+        "21": "КММ",
+        "31": "КМА ММЭ (3.1)",
+        "32": "КМА ММЭ (3.2)",
+        "33": "КФА",
+        "41": "КТФ",
+        "42": "КМА МАиП"
+    }
+    return directions[group]
+
+
 def load_schedule(user_id):
     user = load_user(user_id)
-    course = user["course"]
-    group = user["group"]
-    with open('%s/%s/%s.json' % (str(PATH), course, group)) as json_file:
-        schedule = json.load(json_file)
-    num_sch = ['\n'.join(i) for i in schedule["numerator"]]
-    denom_sch = ['\n'.join(i) for i in schedule["denominator"]]
-    return (num_sch, denom_sch)
+    schedules = []
+    for u in user:
+        course = u["course"]
+        group = u["group"]
+        with open('%s/%s/%s.json' % (PATH, course, group)) as json_file:
+            schedule = json.load(json_file)
+        num_sch = ['\n'.join(i) for i in schedule["numerator"]]
+        denom_sch = ['\n'.join(i) for i in schedule["denominator"]]
+        schedules.append((num_sch, denom_sch))
+    return schedules
 
 
 def today_schedule(user_id, tomorrow=0):
-    schedule = load_schedule(user_id)
+    schedules = load_schedule(user_id)
     today = datetime.date.today() + datetime.timedelta(days=tomorrow)
     weekday = today.weekday()
     is_numerator = today.isocalendar()[1] % 2
-    return schedule[int(not is_numerator)][weekday]
+    out_schedule = []
+    for x in schedules:
+        out_schedule.append(x[int(not is_numerator)][weekday])
+    return out_schedule
 
 
 def week_schedule(user_id, index):
-    schedule = load_schedule(user_id)
-    if schedule[0][index] == schedule[1][index]:
-        return days_schedule[index] + schedule[0][index]
-    else:
-        return '%s*Числитель:*\n%s\n\n*Знаменатель:*\n%s' % (
-            days_schedule[index],
-            schedule[0][index],
-            schedule[1][index]
-        )
+    schedules = load_schedule(user_id)
+    out_schedule = []
+    for x in schedules:
+        if x[0][index] == x[1][index]:
+            out_schedule.append(x[0][index])
+        else:
+            out_schedule.append(
+                '*Числитель:*\n%s\n*Знаменатель:*\n%s' % (
+                    x[0][index],
+                    x[1][index]
+                )
+            )
+    return out_schedule
+
+
+def schedule_title(user_id):
+    user = load_user(user_id)
+    titles = []
+    for x in user:
+        group = '.'.join(x["group"])
+        title = 'Курс %s, группа %s' % (x["course"], group)
+        if int(x["course"]) > 2:
+            group = gr_to_dir(x["group"])
+            title = 'Курс %s, %s' % (x["course"], group)
+        titles.append(title)
+    return titles

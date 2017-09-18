@@ -107,7 +107,7 @@ class MathBot(telepot.helper.ChatHandler):
             titles = schedule_title(user_id)
             for s, t in zip(today_schedule(user_id, 1), titles):
                 self.sender.sendMessage(
-                    '*Расписание на сегодня:\n(%s)*\n%s' % (t, s),
+                    '*Расписание на завтра:\n(%s)*\n%s' % (t, s),
                     'Markdown',
                     reply_markup=self.keyboard
                 )

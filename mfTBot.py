@@ -69,7 +69,7 @@ class MathBot(telepot.helper.ChatHandler):
             self.editor = telepot.helper.Editor(self.bot, sent)
             self.edit_msg_ident = telepot.message_identifier(sent)
         elif group:
-            course = load_user(user_id)["course"]
+            course = load_user(user_id)[0]["course"]
             self.cancel_last()
             if int(course) > 2:
                 self.sender.sendMessage(gr_to_dir(group))

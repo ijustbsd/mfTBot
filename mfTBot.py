@@ -81,7 +81,7 @@ class MathBot(telepot.helper.ChatHandler):
                     reply_markup=ReplyKeyboardRemove()
                 )
                 self.registration()
-                update_stats(new_user=1)
+                update_stats(user_id, new_user=1)
             else:
                 self.sender.sendMessage(start_msg, reply_markup=self.keyboard)
         elif cmd == self.keyboard['keyboard'][0][0]:
@@ -90,14 +90,14 @@ class MathBot(telepot.helper.ChatHandler):
                 'Markdown',
                 reply_markup=self.keyboard
             )
-            update_stats(new_msg=1)
+            update_stats(user_id, new_msg=1)
         elif cmd == self.keyboard['keyboard'][0][1]:
             self.sender.sendMessage(
                 '*Расписание на завтра:*\n' + today_schedule(user_id, 1),
                 'Markdown',
                 reply_markup=self.keyboard
             )
-            update_stats(new_msg=1)
+            update_stats(user_id, new_msg=1)
         elif cmd == self.keyboard['keyboard'][1][0]:
             self.sender.sendMessage(
                 'Выберите день недели:',
@@ -110,14 +110,14 @@ class MathBot(telepot.helper.ChatHandler):
                 'Markdown',
                 reply_markup=self.keyboard
             )
-            update_stats(new_msg=1)
+            update_stats(user_id, new_msg=1)
         elif cmd == self.keyboard['keyboard'][2][0]:
             self.sender.sendMessage(
                 bells_schedule,
                 'Markdown',
                 reply_markup=self.keyboard
             )
-            update_stats(new_msg=1)
+            update_stats(user_id, new_msg=1)
         elif cmd == self.keyboard['keyboard'][3][0]:
             self.sender.sendMessage(
                 settings_msg,
@@ -149,10 +149,8 @@ class MathBot(telepot.helper.ChatHandler):
                 reply_markup=self.keyboard
             )
         elif cmd == '/stats' and str(user_id) in config.admins:
-            users, messages = load_stats()
             self.sender.sendMessage(
-                '*Статистика:*\nПользователей: %d\nСообщений: %d' % (
-                    users, messages),
+                get_stats_msg(),
                 'Markdown',
                 reply_markup=self.keyboard
             )

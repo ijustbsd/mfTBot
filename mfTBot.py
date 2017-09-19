@@ -11,7 +11,7 @@ from telepot.delegate import (
     per_chat_id, create_open, pave_event_space, include_callback_query_chat_id
 )
 
-from libs.users import add_user, load_user
+from libs.users import add_user, load_user, add_schedule, del_schedule
 from libs.stats import update_stats, load_stats
 from libs.schedule import (
     today_schedule, week_schedule, bells_schedule, gr_to_dir, schedule_title,
@@ -41,6 +41,7 @@ class MathBot(telepot.helper.ChatHandler):
         self.keyboard = keyboards["keyboard"]
         self.week_keyboard = keyboards["week_keyboard"]
         self.other_keyboard = keyboards["other_keyboard"]
+        self.add_del_keyboard = keyboards["add_del_keyboard"]
 
         global records
         if self.id in records:
@@ -61,7 +62,10 @@ class MathBot(telepot.helper.ChatHandler):
         if course:
             self.cancel_last()
             self.sender.sendMessage(course)
-            add_user(user_id, course, "")
+            if not load_user(user_id):
+                add_user(user_id, course, "")
+            else:
+                add_schedule(user_id, course, "")
             sent = self.sender.sendMessage(
                 reg_msg_2,
                 reply_markup=group_btns[int(course) - 1]
@@ -69,13 +73,16 @@ class MathBot(telepot.helper.ChatHandler):
             self.editor = telepot.helper.Editor(self.bot, sent)
             self.edit_msg_ident = telepot.message_identifier(sent)
         elif group:
-            course = load_user(user_id)[0]["course"]
+            course = load_user(user_id)[len(load_user(user_id)) - 1]["course"]
             self.cancel_last()
             if int(course) > 2:
                 self.sender.sendMessage(gr_to_dir(group))
             else:
                 self.sender.sendMessage('.'.join(group))
-            add_user(user_id, course, group)
+            if len(load_user(user_id)) == 1:
+                add_user(user_id, course, group)
+            else:
+                add_schedule(user_id, course, group)
             self.sender.sendMessage(reg_msg_3, reply_markup=self.keyboard)
             self.close()
         else:
@@ -144,10 +151,9 @@ class MathBot(telepot.helper.ChatHandler):
             )
         elif cmd == self.other_keyboard['keyboard'][0][0]:
             self.sender.sendMessage(
-                again_msg,
-                reply_markup=ReplyKeyboardRemove()
+                "Выберите действие:",
+                reply_markup=self.add_del_keyboard
             )
-            self.registration(user_id)
         elif cmd == self.other_keyboard['keyboard'][1][0]:
             self.sender.sendMessage(
                 updates_msg,
@@ -166,6 +172,13 @@ class MathBot(telepot.helper.ChatHandler):
                 'Markdown',
                 reply_markup=self.keyboard
             )
+        elif cmd == self.add_del_keyboard['keyboard'][0][0]:
+            self.sender.sendMessage(
+                "Выберите расписание",
+                'Markdown',
+                reply_markup=ReplyKeyboardRemove()
+            )
+            self.registration(user_id)
         elif cmd == '/stats' and str(user_id) in config.admins:
             users, messages = load_stats()
             self.sender.sendMessage(

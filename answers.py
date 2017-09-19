@@ -20,27 +20,25 @@ t.me/mathfuck\_news
 """
 
 stats_msg = """
-*Статистика:*
 *За сегодня:*
-Пользователей: %d
+Зарегистрировалось: %d
 Сообщений: %d
+Пользователей: %d
 
 *За всё время:*
-Пользователей: %d
+Зарегистрировалось: %d
 Сообщений: %d
-
-*Запросы (%d):*
 """
 
 
 def get_stats_msg():
     stats = load_stats()
+    uniq = len(stats["requests"])
     out = stats_msg % (
-        stats["today_stats"]["users"], stats["today_stats"]["messages"],
-        stats["all_stats"]["users"], stats["all_stats"]["messages"],
-        len(stats["requests"])
+        stats["today_stats"]["users"], stats["today_stats"]["messages"], uniq,
+        stats["all_stats"]["users"], stats["all_stats"]["messages"]
     )
-    for t in stats["requests"].items():
-        reqs = "%s: %d\n" % (t)
-        out += reqs
+    # for t in stats["requests"].items():
+    #     reqs = "%s: %d\n" % (t)
+    #     out += reqs
     return out

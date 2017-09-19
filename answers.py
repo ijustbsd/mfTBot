@@ -29,7 +29,7 @@ stats_msg = """
 Пользователей: %d
 Сообщений: %d
 
-*Запросы:*
+*Запросы (%d):*
 """
 
 
@@ -37,7 +37,8 @@ def get_stats_msg():
     stats = load_stats()
     out = stats_msg % (
         stats["today_stats"]["users"], stats["today_stats"]["messages"],
-        stats["all_stats"]["users"], stats["all_stats"]["messages"]
+        stats["all_stats"]["users"], stats["all_stats"]["messages"],
+        len(stats["requests"])
     )
     for t in stats["requests"].items():
         reqs = "%s: %d\n" % (t)

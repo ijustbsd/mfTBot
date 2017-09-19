@@ -6,8 +6,8 @@
 	},
 	"today_stats": {
 		"messages": 0,
-		"days": 0,
 		"users": 0
 	},
-	"requests": {}
+	"requests": {},
+	"days": 0
 }

@@ -5,7 +5,7 @@ import json
 PATH = str(Path(__file__).parents[1]) + '/data/stats.json'
 
 
-def save_stats(users, messages, type, days=0, user_id=0, user_msg=0):
+def save_stats(users, messages, type, user_id=0, user_msg=0):
     full_stats = load_stats()
     if type == 0:
         stats = full_stats["all_stats"]
@@ -15,10 +15,15 @@ def save_stats(users, messages, type, days=0, user_id=0, user_msg=0):
         stats = full_stats["today_stats"]
         stats["users"] = int(users)
         stats["messages"] = int(messages)
-        stats["days"] = int(days)
     elif type == 2:
         stats = full_stats["requests"]
+        days = full_stats["days"]
+        date = datetime.date.today()
+        days_today = date.toordinal()
+        if days != days_today:
+            stats.clear()
         stats[str(user_id)] = int(user_msg)
+        full_stats["days"] = days_today
     with open(PATH, 'w') as json_file:
         json.dump(full_stats, json_file, ensure_ascii=False)
 
@@ -43,17 +48,17 @@ def update_all(new_user, new_msg):
 
 def update_today(new_user, new_msg):
     stats = load_stats()["today_stats"]
-    users, messages, days = (
+    users, messages = (
         int(stats["users"]),
-        int(stats["messages"]),
-        int(stats["days"])
+        int(stats["messages"])
     )
+    days = load_stats()["days"]
     date = datetime.date.today()
     days_today = date.toordinal()
     if days == days_today:
-        save_stats(users + new_user, messages + new_msg, 1, days=days)
+        save_stats(users + new_user, messages + new_msg, 1)
     else:
-        save_stats(new_user, new_msg, 1, days=days_today)
+        save_stats(new_user, new_msg, 1)
 
 
 def update_reqs(user_id, new_user):

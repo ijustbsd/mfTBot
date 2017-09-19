@@ -4,32 +4,24 @@ import json
 PATH = str(Path(__file__).parents[1]) + '/data/users.json'
 
 
-def add_user(user_id, course, group):
+def add_schedule(user_id, qual, course, group):
     with open(PATH) as json_file:
         users = json.load(json_file)
-    users[str(user_id)] = ({
-        "qual": "qual",
-        "course": course,
-        "group": group
-    },)
-    with open(PATH, 'w') as json_file:
-        json.dump(users, json_file, ensure_ascii=False)
-
-
-def add_schedule(user_id, course, group):
-    with open(PATH) as json_file:
-        users = json.load(json_file)
-    new_schedule = {
-        "qual": "qual",
-        "course": course,
-        "group": group
-    }
-    user = users[str(user_id)]
-    if user[len(user) - 1]["group"] == "":
-        out = tuple(user[:-1]) + (new_schedule,)
+    if not load_user(user_id):
+        users[str(user_id)] = ({
+            "qual": qual,
+            "course": course,
+            "group": group
+        },)
     else:
+        new_schedule = {
+            "qual": qual,
+            "course": course,
+            "group": group
+        }
+        user = users[str(user_id)]
         out = tuple(user) + (new_schedule,)
-    users[str(user_id)] = out
+        users[str(user_id)] = out
     with open(PATH, 'w') as json_file:
         json.dump(users, json_file, ensure_ascii=False)
 

@@ -29,8 +29,8 @@ bells_schedule = """
 """
 
 
-def gr_to_dir(group):
-    directions = {
+def gr_to_dir(qual, group):
+    bach_dir = {
         "11": "КАТМА",
         "12": "КУЧП",
         "21": "КММ",
@@ -40,7 +40,13 @@ def gr_to_dir(group):
         "41": "КТФ",
         "42": "КМА МАиП"
     }
-    return directions[group]
+    spo_dir = {
+        "11": "ПКС",
+        "21": "ЭБУ-1",
+        "22": "ЭБУ-2"
+    }
+    quals = {"spo": spo_dir, "bach": bach_dir}
+    return quals[qual][group]
 
 
 def load_schedule(user_id):
@@ -49,8 +55,9 @@ def load_schedule(user_id):
     for u in user:
         course = u["course"]
         group = u["group"]
-        with open('%s/%s/%s.json' % (PATH, course, group)) as json_file:
-            schedule = json.load(json_file)
+        qual = u["qual"]
+        with open('%s/%s/%s/%s.json' % (PATH, qual, course, group)) as file:
+            schedule = json.load(file)
         num_sch = ['\n'.join(i) for i in schedule["numerator"]]
         denom_sch = ['\n'.join(i) for i in schedule["denominator"]]
         schedules.append((num_sch, denom_sch))
@@ -90,8 +97,11 @@ def schedule_title(user_id):
     for x in user:
         group = '.'.join(x["group"])
         title = 'Курс %s, группа %s' % (x["course"], group)
-        if int(x["course"]) > 2:
-            group = gr_to_dir(x["group"])
+        if x["qual"] == "spo":
+            group = gr_to_dir(x["qual"], x["group"])
+            title = 'СПО, курс %s, %s' % (x["course"], group)
+        elif int(x["course"]) > 2:
+            group = gr_to_dir(x["qual"], x["group"])
             title = 'Курс %s, %s' % (x["course"], group)
         titles.append(title)
     return titles

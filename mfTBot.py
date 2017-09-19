@@ -11,14 +11,14 @@ from telepot.delegate import (
     per_chat_id, create_open, pave_event_space, include_callback_query_chat_id
 )
 
-from libs.users import add_user, load_user, add_schedule, del_schedule
+from libs.users import load_user, add_schedule, del_schedule
 from libs.stats import update_stats, load_stats
 from libs.schedule import (
     today_schedule, week_schedule, bells_schedule, gr_to_dir, schedule_title,
     days_schedule
 )
 from answers import *
-from inline_btns import course_btns, group_btns
+from inline_btns import qual_btns, course_btns, group_btns
 import config
 
 
@@ -58,35 +58,51 @@ class MathBot(telepot.helper.ChatHandler):
             self.edit_msg_ident = None
             self.editor = None
 
-    def registration(self, user_id, course=None, group=None):
-        if course:
+        self.users = {}
+
+    def registration(self, user_id, qual=None, course=None, group=None):
+        if qual:
             self.cancel_last()
-            self.sender.sendMessage(course)
-            if not load_user(user_id):
-                add_user(user_id, course, "")
-            else:
-                add_schedule(user_id, course, "")
+            self.users[user_id]["qual"] = qual
+            self.sender.sendMessage(qual)
             sent = self.sender.sendMessage(
                 reg_msg_2,
-                reply_markup=group_btns[int(course) - 1]
+                reply_markup=course_btns[self.users[user_id]["qual"]]
+            )
+            self.editor = telepot.helper.Editor(self.bot, sent)
+            self.edit_msg_ident = telepot.message_identifier(sent)
+        elif course:
+            self.cancel_last()
+            self.users[user_id]["course"] = course
+            self.sender.sendMessage(course)
+            q = self.users[user_id]["qual"]
+            sent = self.sender.sendMessage(
+                reg_msg_3,
+                reply_markup=group_btns[q][int(course) - 1]
             )
             self.editor = telepot.helper.Editor(self.bot, sent)
             self.edit_msg_ident = telepot.message_identifier(sent)
         elif group:
-            course = load_user(user_id)[len(load_user(user_id)) - 1]["course"]
             self.cancel_last()
-            if int(course) > 2:
-                self.sender.sendMessage(gr_to_dir(group))
+            self.users[user_id]["group"] = group
+            if self.users[user_id]["qual"] == "spo":
+                self.sender.sendMessage(gr_to_dir("spo", group))
             else:
-                self.sender.sendMessage('.'.join(group))
-            if len(load_user(user_id)) == 1:
-                add_user(user_id, course, group)
-            else:
-                add_schedule(user_id, course, group)
-            self.sender.sendMessage(reg_msg_3, reply_markup=self.keyboard)
+                if int(self.users[user_id]["course"]) > 2:
+                    self.sender.sendMessage(gr_to_dir("bach", group))
+                else:
+                    self.sender.sendMessage('.'.join(group))
+            user = self.users[user_id]
+            add_schedule(user_id, user["qual"], user["course"], user["group"])
+            self.sender.sendMessage(reg_msg_4, reply_markup=self.keyboard)
             self.close()
         else:
-            sent = self.sender.sendMessage(reg_msg_1, reply_markup=course_btns)
+            self.users[user_id] = {
+                "qual": "bach",
+                "course": "1",
+                "group": "41"
+            }
+            sent = self.sender.sendMessage(reg_msg_1, reply_markup=qual_btns)
             self.editor = telepot.helper.Editor(self.bot, sent)
             self.edit_msg_ident = telepot.message_identifier(sent)
 
@@ -151,7 +167,7 @@ class MathBot(telepot.helper.ChatHandler):
             )
         elif cmd == self.other_keyboard['keyboard'][0][0]:
             self.sender.sendMessage(
-                "Выберите действие:",
+                'Выберите действие:',
                 reply_markup=self.add_del_keyboard
             )
         elif cmd == self.other_keyboard['keyboard'][1][0]:
@@ -174,7 +190,7 @@ class MathBot(telepot.helper.ChatHandler):
             )
         elif cmd == self.add_del_keyboard['keyboard'][0][0]:
             self.sender.sendMessage(
-                "Выберите расписание",
+                'Какое расписание нужно?',
                 'Markdown',
                 reply_markup=ReplyKeyboardRemove()
             )
@@ -206,10 +222,13 @@ class MathBot(telepot.helper.ChatHandler):
 
     def on_callback_query(self, msg):
         query, from_id, data = telepot.glance(msg, flavor='callback_query')
-        groups = ('11', '12', '21', '31', '32', '33', '41', '42', '51', '52')
-        if int(data) in range(1, 6):
+        spo_gr = ('11', '21', '22')
+        bach_gr = ('11', '12', '21', '31', '32', '33', '41', '42', '51', '52')
+        if data in ["spo", "bach", "master", "add_edu"]:
+            self.registration(from_id, qual=data)
+        elif int(data) in range(1, 6):
             self.registration(from_id, course=data)
-        elif data in groups:
+        elif data in spo_gr or bach_gr:
             self.registration(from_id, group=data)
 
     def on_close(self, ex):

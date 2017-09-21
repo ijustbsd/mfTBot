@@ -20,10 +20,12 @@ def add_schedule(user_id, qual, course, group):
             "group": group
         }
         user = users[str(user_id)]
+        if new_schedule in user or len(user) > 4:
+            return
         out = tuple(user) + (new_schedule,)
         users[str(user_id)] = out
     with open(PATH, 'w') as json_file:
-        json.dump(users, json_file, ensure_ascii=False)
+        json.dump(users, json_file, ensure_ascii=False, indent=4)
 
 
 def del_schedule(user_id, qual, course, group):

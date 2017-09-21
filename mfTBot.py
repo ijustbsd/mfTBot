@@ -136,22 +136,38 @@ class MathBot(telepot.helper.ChatHandler):
             else:
                 self.sender.sendMessage(start_msg, reply_markup=self.keyboard)
         elif cmd == self.keyboard['keyboard'][0][0]:
-            titles = schedule_title(user_id)
-            for s, t in zip(today_schedule(user_id), titles):
+            schedule = today_schedule(user_id)
+            if len(schedule) == 1:
                 self.sender.sendMessage(
-                    '*Расписание на сегодня:\n(%s)*\n%s' % (t, s),
+                    '*Расписание на сегодня:*\n%s' % (schedule[0]),
                     'Markdown',
                     reply_markup=self.keyboard
                 )
+            else:
+                titles = schedule_title(user_id)
+                for s, t in zip(today_schedule(user_id), titles):
+                    self.sender.sendMessage(
+                        '*Расписание на сегодня:\n(%s)*\n%s' % (t, s),
+                        'Markdown',
+                        reply_markup=self.keyboard
+                    )
             update_stats(new_msg=1)
         elif cmd == self.keyboard['keyboard'][0][1]:
-            titles = schedule_title(user_id)
-            for s, t in zip(today_schedule(user_id, 1), titles):
+            schedule = today_schedule(user_id, 1)
+            if len(schedule) == 1:
                 self.sender.sendMessage(
-                    '*Расписание на завтра:\n(%s)*\n%s' % (t, s),
+                    '*Расписание на завтра:*\n%s' % (schedule[0]),
                     'Markdown',
                     reply_markup=self.keyboard
                 )
+            else:
+                titles = schedule_title(user_id)
+                for s, t in zip(today_schedule(user_id, 1), titles):
+                    self.sender.sendMessage(
+                        '*Расписание на завтра:\n(%s)*\n%s' % (t, s),
+                        'Markdown',
+                        reply_markup=self.keyboard
+                    )
             update_stats(new_msg=1)
         elif cmd == self.keyboard['keyboard'][1][0]:
             self.sender.sendMessage(

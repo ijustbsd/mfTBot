@@ -1,6 +1,7 @@
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 
 spo_course = InlineKeyboardMarkup(inline_keyboard=[[
+    InlineKeyboardButton(text='1', callback_data='1'),
     InlineKeyboardButton(text='2', callback_data='2'),
     InlineKeyboardButton(text='3', callback_data='3'),
     InlineKeyboardButton(text='4', callback_data='4'),
@@ -104,7 +105,13 @@ fifth_btns = InlineKeyboardMarkup(inline_keyboard=[
 ])
 
 first_spo = InlineKeyboardMarkup(inline_keyboard=[
-    []
+    [
+        InlineKeyboardButton(text='ПКС-1', callback_data='11'),
+        InlineKeyboardButton(text='ПКС-2', callback_data='12')
+    ],
+    [
+        InlineKeyboardButton(text='ЭБУ', callback_data='21')
+    ]
 ])
 
 second_spo = InlineKeyboardMarkup(inline_keyboard=[

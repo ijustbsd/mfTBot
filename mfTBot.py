@@ -12,7 +12,7 @@ from telepot.delegate import (
 )
 
 from libs.users import load_user, add_schedule, del_schedule
-from libs.stats import update_stats, load_stats
+from libs.stats import update_stats
 from libs.schedule import (
     today_schedule, week_schedule, bells_schedule, gr_to_dir, schedule_title,
     days_schedule
@@ -64,7 +64,7 @@ class MathBot(telepot.helper.ChatHandler):
 
         global records
         if self.id in records:
-            self.count, self.edit_msg_ident = records[self.id]
+            self.count, self.edit_msg_ident, self.users = records[self.id]
             if self.edit_msg_ident:
                 self.editor = telepot.helper.Editor(
                     self.bot,
@@ -151,7 +151,7 @@ class MathBot(telepot.helper.ChatHandler):
                         'Markdown',
                         reply_markup=self.keyboard
                     )
-            update_stats(new_msg=1)
+            update_stats(user_id, new_msg=1)
         elif cmd == self.keyboard['keyboard'][0][1]:
             schedule = today_schedule(user_id, 1)
             if len(schedule) == 1:
@@ -168,7 +168,7 @@ class MathBot(telepot.helper.ChatHandler):
                         'Markdown',
                         reply_markup=self.keyboard
                     )
-            update_stats(new_msg=1)
+            update_stats(user_id, new_msg=1)
         elif cmd == self.keyboard['keyboard'][1][0]:
             self.sender.sendMessage(
                 'Выберите день недели:',
@@ -268,7 +268,7 @@ class MathBot(telepot.helper.ChatHandler):
 
     def on_callback_query(self, msg):
         query, from_id, data = telepot.glance(msg, flavor='callback_query')
-        spo_gr = ('11', '21', '22')
+        spo_gr = ('11', '12', '21', '22')
         bach_gr = ('11', '12', '21', '31', '32', '33', '41', '42', '51', '52')
         if data in ["spo", "bach", "master", "add_edu"]:
             self.registration(from_id, qual=data)

@@ -64,20 +64,19 @@ class MathBot(telepot.helper.ChatHandler):
 
         global records
         if self.id in records:
-            self.count, self.edit_msg_ident = records[self.id]
+            self.count, self.edit_msg_ident, self.users = records[self.id]
             if self.edit_msg_ident:
                 self.editor = telepot.helper.Editor(
                     self.bot,
                     self.edit_msg_ident
                 )
             else:
-                None
+                self.editor = None
         else:
             self.count = 0
             self.edit_msg_ident = None
             self.editor = None
-
-        self.users = {}
+            self.users = {}
 
     def registration(self, user_id, qual=None, course=None, group=None):
         if qual:
@@ -278,7 +277,7 @@ class MathBot(telepot.helper.ChatHandler):
 
     def on_close(self, ex):
         global records
-        records[self.id] = (self.count, self.edit_msg_ident)
+        records[self.id] = (self.count, self.edit_msg_ident, self.users)
 
 bot = telepot.DelegatorBot(config.TOKEN, [
     include_callback_query_chat_id(

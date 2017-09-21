@@ -109,9 +109,7 @@ first_spo = InlineKeyboardMarkup(inline_keyboard=[
 
 second_spo = InlineKeyboardMarkup(inline_keyboard=[
     [
-        InlineKeyboardButton(text='ПКС', callback_data='11')
-    ],
-    [
+        InlineKeyboardButton(text='ПКС', callback_data='11'),
         InlineKeyboardButton(text='ЭБУ-1', callback_data='21'),
         InlineKeyboardButton(text='ЭБУ-2', callback_data='22')
     ]
@@ -119,9 +117,7 @@ second_spo = InlineKeyboardMarkup(inline_keyboard=[
 
 third_spo = InlineKeyboardMarkup(inline_keyboard=[
     [
-        InlineKeyboardButton(text='ПКС', callback_data='11')
-    ],
-    [
+        InlineKeyboardButton(text='ПКС', callback_data='11'),
         InlineKeyboardButton(text='ЭБУ', callback_data='21')
     ]
 ])

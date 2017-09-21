@@ -28,12 +28,12 @@ def add_schedule(user_id, qual, course, group):
         json.dump(users, json_file, ensure_ascii=False, indent=4)
 
 
-def del_schedule(user_id, qual, course, group):
+def del_schedule(user_id, num):
     with open(PATH) as json_file:
         users = json.load(json_file)
-    for u in users[str(user_id)]:
-        if u.values() == [str(qual), str(course), str(group)]:
-            users[str(user_id)].pop(users[str(user_id)].index(u))
+    user = tuple(users[str(user_id)])
+    out = tuple(i for i in user if i != user[int(num)])
+    users[str(user_id)] = out
     with open(PATH, 'w') as json_file:
         json.dump(users, json_file, ensure_ascii=False)
 

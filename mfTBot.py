@@ -6,7 +6,7 @@ from time import sleep
 import telepot
 import telepot.helper
 from telepot.loop import MessageLoop
-from telepot.namedtuple import ReplyKeyboardRemove
+from telepot.namedtuple import ReplyKeyboardRemove, InlineKeyboardMarkup, InlineKeyboardButton
 from telepot.delegate import (
     per_chat_id, create_open, pave_event_space, include_callback_query_chat_id
 )
@@ -28,6 +28,25 @@ def listmerge(lst):
         for item in l:
             merge_lists.append(item)
     return merge_lists
+
+
+def qual_to_word(qual):
+    titles = {
+        "spo": "СПО",
+        "bach": "Бакалавр"
+    }
+    return titles[qual]
+
+
+def del_keyboard_gen(user_id):
+    titles = schedule_title(user_id)
+    btns = []
+    for s in titles:
+        callback = 'del_%d' % (titles.index(s))
+        btns.append([
+            InlineKeyboardButton(text=s, callback_data=callback)
+            ])
+    return InlineKeyboardMarkup(inline_keyboard=btns)
 
 records = telepot.helper.SafeDict()
 
@@ -190,11 +209,19 @@ class MathBot(telepot.helper.ChatHandler):
             )
         elif cmd == self.add_del_keyboard['keyboard'][0][0]:
             self.sender.sendMessage(
-                'Какое расписание нужно?',
+                'Какое расписание нужно добавить?',
                 'Markdown',
                 reply_markup=ReplyKeyboardRemove()
             )
             self.registration(user_id)
+        elif cmd == self.add_del_keyboard['keyboard'][1][0]:
+            sent = self.sender.sendMessage(
+                'Какое расписание нужно убрать?',
+                'Markdown',
+                reply_markup=del_keyboard_gen(user_id)
+            )
+            self.editor = telepot.helper.Editor(self.bot, sent)
+            self.edit_msg_ident = telepot.message_identifier(sent)
         elif cmd == '/stats' and str(user_id) in config.admins:
             users, messages = load_stats()
             self.sender.sendMessage(
@@ -226,6 +253,24 @@ class MathBot(telepot.helper.ChatHandler):
         bach_gr = ('11', '12', '21', '31', '32', '33', '41', '42', '51', '52')
         if data in ["spo", "bach", "master", "add_edu"]:
             self.registration(from_id, qual=data)
+        elif "del" in data:
+            self.cancel_last()
+            titles = schedule_title(from_id)
+            self.sender.sendMessage(
+                titles[int(data[4:])],
+                reply_markup=self.keyboard
+            )
+            if len(titles) == 1:
+                self.sender.sendMessage(
+                    "Нельзя удалить единственное расписание!",
+                    reply_markup=self.keyboard
+                )
+                return
+            del_schedule(from_id, data[4:])
+            self.sender.sendMessage(
+                "Расписание успешно удалено!",
+                reply_markup=self.keyboard
+            )
         elif int(data) in range(1, 6):
             self.registration(from_id, course=data)
         elif data in spo_gr or bach_gr:

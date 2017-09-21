@@ -204,15 +204,21 @@ class MathBot(telepot.helper.ChatHandler):
                 'Выберите действие:',
                 reply_markup=self.add_del_keyboard
             )
-        elif cmd == self.other_keyboard['keyboard'][1][0]:
+        elif cmd in (self.other_keyboard['keyboard'][1][0], self.add_del_keyboard['keyboard'][2][0]):
             self.sender.sendMessage(
-                updates_msg,
+                "Функция в разработке \U0001F527",
                 'Markdown',
                 reply_markup=self.keyboard
             )
         elif cmd == self.other_keyboard['keyboard'][2][0]:
             self.sender.sendMessage(
                 feedback_msg,
+                'Markdown',
+                reply_markup=self.keyboard
+            )
+        elif cmd == self.other_keyboard['keyboard'][2][1]:
+            self.sender.sendMessage(
+                updates_msg,
                 'Markdown',
                 reply_markup=self.keyboard
             )

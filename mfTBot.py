@@ -82,7 +82,7 @@ class MathBot(telepot.helper.ChatHandler):
         if qual:
             self.cancel_last()
             self.users[user_id]["qual"] = qual
-            self.sender.sendMessage(qual)
+            self.sender.sendMessage(qual_to_word(qual))
             sent = self.sender.sendMessage(
                 reg_msg_2,
                 reply_markup=course_btns[self.users[user_id]["qual"]]

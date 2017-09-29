@@ -12,7 +12,7 @@ from telepot.delegate import (
 )
 
 from libs.users import load_user, add_schedule, del_schedule
-from libs.stats import update_stats
+from libs.stats import new_user, new_msg
 from libs.schedule import (
     today_schedule, week_schedule, bells_schedule, gr_to_dir, schedule_title,
     days_schedule
@@ -132,7 +132,6 @@ class MathBot(telepot.helper.ChatHandler):
                     reply_markup=ReplyKeyboardRemove()
                 )
                 self.registration(user_id)
-                update_stats(user_id, new_user=1)
             else:
                 self.sender.sendMessage(start_msg, reply_markup=self.keyboard)
         elif cmd == self.keyboard['keyboard'][0][0]:
@@ -151,7 +150,6 @@ class MathBot(telepot.helper.ChatHandler):
                         'Markdown',
                         reply_markup=self.keyboard
                     )
-            update_stats(user_id, new_msg=1)
         elif cmd == self.keyboard['keyboard'][0][1]:
             schedule = today_schedule(user_id, 1)
             if len(schedule) == 1:
@@ -168,7 +166,6 @@ class MathBot(telepot.helper.ChatHandler):
                         'Markdown',
                         reply_markup=self.keyboard
                     )
-            update_stats(user_id, new_msg=1)
         elif cmd == self.keyboard['keyboard'][1][0]:
             self.sender.sendMessage(
                 'Выберите день недели:',
@@ -185,14 +182,12 @@ class MathBot(telepot.helper.ChatHandler):
                 'Markdown',
                 reply_markup=self.keyboard
             )
-            update_stats(user_id, new_msg=1)
         elif cmd == self.keyboard['keyboard'][2][0]:
             self.sender.sendMessage(
                 bells_schedule,
                 'Markdown',
                 reply_markup=self.keyboard
             )
-            update_stats(user_id, new_msg=1)
         elif cmd == self.keyboard['keyboard'][3][0]:
             self.sender.sendMessage(
                 settings_msg,
@@ -263,6 +258,13 @@ class MathBot(telepot.helper.ChatHandler):
         user_id = telepot.glance(msg)[2]
         if content_type == 'text':
             self.answerer(user_id, msg['text'])
+            new_msg(user_id, msg['text'])
+            if msg['text'] == "/start":
+                userdata = msg['from']
+                firstname = userdata.get('first_name')
+                lastname = userdata.get('last_name')
+                username = userdata.get('username')
+                new_user(user_id, firstname, lastname, username)
         else:
             self.sender.sendMessage(error_msg, reply_markup=self.keyboard)
 

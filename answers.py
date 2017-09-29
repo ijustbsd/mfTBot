@@ -1,4 +1,7 @@
-from libs.stats import load_stats
+from datetime import datetime
+
+from libs.db import DBManager
+
 reg_msg_0 = 'Привет! Похоже я не знаю тебя \U0001F614'
 reg_msg_1 = 'Выбери квалификацию:'
 reg_msg_2 = 'Выбери свой курс:'
@@ -22,24 +25,36 @@ t.me/mathfuck\_news
 
 stats_msg = """
 *За сегодня:*
-Зарегистрировалось: %d
-Сообщений: %d
-Пользователей: %d
+Зарегистрировалось: {}
+Сообщений: {}
+Пользователей: {}
 
 *За всё время:*
-Зарегистрировалось: %d
-Сообщений: %d
+Зарегистрировалось: {}
+Сообщений: {}
 """
 
 
 def get_stats_msg():
-    stats = load_stats()
-    uniq = len(stats["requests"])
-    out = stats_msg % (
-        stats["today_stats"]["users"], stats["today_stats"]["messages"], uniq,
-        stats["all_stats"]["users"], stats["all_stats"]["messages"]
-    )
-    # for t in stats["requests"].items():
-    #     reqs = "%s: %d\n" % (t)
-    #     out += reqs
-    return out
+    db = DBManager()
+    output = []
+    query = "SELECT COUNT(*) FROM users WHERE regdate = {}".format(
+        str(datetime.now().date()))
+    output.append(*db.query(query).fetchall()[0])
+    query = "SELECT COUNT(*) FROM messages WHERE\
+        command LIKE '%Се%' OR\
+        command LIKE '%З%' OR\
+        command LIKE '%на%' OR\
+        command LIKE '%зв%'"
+    output.append(*db.query(query).fetchall()[0])
+    query = "SELECT chatid FROM messages GROUP BY chatid HAVING COUNT(*) > 0"
+    output.append(len(db.query(query).fetchall()))
+    query = "SELECT COUNT(*) FROM users"
+    output.append(*db.query(query).fetchall()[0])
+    query = "SELECT COUNT(*) FROM messages WHERE\
+        command LIKE '%Се%' OR\
+        command LIKE '%З%' OR\
+        command LIKE '%на%' OR\
+        command LIKE '%зв%' AND msgdate = {}".format(str(datetime.now().date()))
+    output.append(*db.query(query).fetchall()[0])
+    return stats_msg.format(*output)

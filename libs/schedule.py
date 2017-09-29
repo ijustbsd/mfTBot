@@ -1,10 +1,10 @@
 import datetime
 import json
-from pathlib import Path
 
 from libs.users import load_user
+from config import PATH
 
-PATH = str(Path(__file__).parents[1]) + '/data/timetables'
+PATH = PATH + '/data/timetables'
 
 days_schedule = (
     '*Расписание на понедельник:*\n',
@@ -54,9 +54,9 @@ def load_schedule(user_id):
     user = load_user(user_id)
     schedules = []
     for u in user:
-        course = u["course"]
-        group = u["group"]
-        qual = u["qual"]
+        qual = u[0]
+        course = u[1]
+        group = u[2]
         with open('%s/%s/%s/%s.json' % (PATH, qual, course, group)) as file:
             schedule = json.load(file)
         num_sch = ['\n'.join(i) for i in schedule["numerator"]]
@@ -96,13 +96,13 @@ def schedule_title(user_id):
     user = load_user(user_id)
     titles = []
     for x in user:
-        group = '.'.join(x["group"])
-        title = 'Курс %s, группа %s' % (x["course"], group)
-        if x["qual"] == "spo":
-            group = gr_to_dir(x["qual"], x["group"])
-            title = 'СПО, курс %s, %s' % (x["course"], group)
-        elif int(x["course"]) > 2:
-            group = gr_to_dir(x["qual"], x["group"])
-            title = 'Курс %s, %s' % (x["course"], group)
+        group = '.'.join(x[2])
+        title = 'Курс %s, группа %s' % (x[1], group)
+        if x[0] == "spo":
+            group = gr_to_dir(x[0], x[2])
+            title = 'СПО, курс %s, %s' % (x[1], group)
+        elif int(x[1]) > 2:
+            group = gr_to_dir(x[0], x[2])
+            title = 'Курс %s, %s' % (x[1], group)
         titles.append(title)
     return titles

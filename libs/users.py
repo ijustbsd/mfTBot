@@ -6,7 +6,7 @@ def add_schedule(user_id, qual, course, group):
     if len(scheds) > 4:
         return  # TODO: Output
     for s in scheds:
-        if s is (qual, course, group):
+        if s == (qual, course, group):
             return  # TODO: Output
     db = DBManager()
     cols = ('chatid, faculty, qual, course, groupa')

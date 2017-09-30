@@ -45,7 +45,7 @@ def get_stats_msg():
         command LIKE '%Се%' OR\
         command LIKE '%З%' OR\
         command LIKE '%на%' OR\
-        command LIKE '%зв%'"
+        command LIKE '%зв%' AND msgdate = '{}'".format(str(datetime.now().date()))
     output.append(*db.query(query).fetchone())
     query = "SELECT chatid FROM messages GROUP BY chatid HAVING COUNT(*) > 0"
     output.append(len(db.query(query).fetchall()))
@@ -55,6 +55,6 @@ def get_stats_msg():
         command LIKE '%Се%' OR\
         command LIKE '%З%' OR\
         command LIKE '%на%' OR\
-        command LIKE '%зв%' AND msgdate = '{}'".format(str(datetime.now().date()))
+        command LIKE '%зв%'"
     output.append(*db.query(query).fetchone())
     return stats_msg.format(*output)

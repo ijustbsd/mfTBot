@@ -41,20 +41,13 @@ def get_stats_msg():
     query = "SELECT COUNT(*) FROM users WHERE regdate = '{}'".format(
         str(datetime.now().date()))
     output.append(*db.query(query).fetchone())
-    query = "SELECT COUNT(*) FROM messages WHERE\
-        command LIKE '%Се%' OR\
-        command LIKE '%З%' OR\
-        command LIKE '%на%' OR\
-        command LIKE '%зв%' AND msgdate = {}".format(str(datetime.now().date()))
+    query = "SELECT COUNT(*) FROM messages WHERE msgdate = '{}'".format(
+        str(datetime.now().date()))
     output.append(*db.query(query).fetchone())
     query = "SELECT chatid FROM messages GROUP BY chatid HAVING COUNT(*) > 0"
     output.append(len(db.query(query).fetchall()))
     query = "SELECT COUNT(*) FROM users"
     output.append(*db.query(query).fetchone())
-    query = "SELECT COUNT(*) FROM messages WHERE\
-        command LIKE '%Се%' OR\
-        command LIKE '%З%' OR\
-        command LIKE '%на%' OR\
-        command LIKE '%зв%'"
+    query = "SELECT COUNT(*) FROM messages"
     output.append(*db.query(query).fetchone())
     return stats_msg.format(*output)

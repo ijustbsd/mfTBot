@@ -3,7 +3,7 @@ from config import PATH
 
 users = """
 CREATE TABLE IF NOT EXISTS 'users' (
-'chatid' INTEGER NOT NULL,
+'chatid' INTEGER NOT NULL UNIQUE,
 'firstname' TEXT,
 'lastname' TEXT,
 'username' TEXT,

@@ -38,23 +38,23 @@ stats_msg = """
 def get_stats_msg():
     db = DBManager()
     output = []
-    query = "SELECT COUNT(*) FROM users WHERE regdate = {}".format(
+    query = "SELECT COUNT(*) FROM users WHERE regdate = '{}'".format(
         str(datetime.now().date()))
-    output.append(*db.query(query).fetchall()[0])
+    output.append(*db.query(query).fetchone())
     query = "SELECT COUNT(*) FROM messages WHERE\
         command LIKE '%Се%' OR\
         command LIKE '%З%' OR\
         command LIKE '%на%' OR\
         command LIKE '%зв%'"
-    output.append(*db.query(query).fetchall()[0])
+    output.append(*db.query(query).fetchone())
     query = "SELECT chatid FROM messages GROUP BY chatid HAVING COUNT(*) > 0"
     output.append(len(db.query(query).fetchall()))
     query = "SELECT COUNT(*) FROM users"
-    output.append(*db.query(query).fetchall()[0])
+    output.append(*db.query(query).fetchone())
     query = "SELECT COUNT(*) FROM messages WHERE\
         command LIKE '%Се%' OR\
         command LIKE '%З%' OR\
         command LIKE '%на%' OR\
-        command LIKE '%зв%' AND msgdate = {}".format(str(datetime.now().date()))
-    output.append(*db.query(query).fetchall()[0])
+        command LIKE '%зв%' AND msgdate = '{}'".format(str(datetime.now().date()))
+    output.append(*db.query(query).fetchone())
     return stats_msg.format(*output)

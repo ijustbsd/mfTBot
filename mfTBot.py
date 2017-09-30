@@ -259,12 +259,11 @@ class MathBot(telepot.helper.ChatHandler):
         if content_type == 'text':
             self.answerer(user_id, msg['text'])
             new_msg(user_id, msg['text'])
-            if msg['text'] == "/start":
-                userdata = msg['from']
-                firstname = userdata.get('first_name')
-                lastname = userdata.get('last_name')
-                username = userdata.get('username')
-                new_user(user_id, firstname, lastname, username)
+            userdata = msg['from']
+            firstname = userdata.get('first_name')
+            lastname = userdata.get('last_name')
+            username = userdata.get('username')
+            new_user(user_id, firstname, lastname, username)
         else:
             self.sender.sendMessage(error_msg, reply_markup=self.keyboard)
 

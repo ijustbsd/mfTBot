@@ -17,8 +17,9 @@ def new_msg(chatid, cmd):
 def new_user(chatid, firstname, lastname, username):
     date = str(datetime.now().date())
     db = DBManager()
-    cols = ('chatid, firstname, lastname, username, regdate')
+    cols = 'firstname, lastname, username'
     vals = (chatid, firstname, lastname, username, date)
-    query = "INSERT INTO users ({}) VALUES ({},'{}','{}','{}', '{}')".format(
-        cols, *vals)
-    db.query(query)
+    query = "INSERT OR IGNORE INTO users VALUES ({}, '{}', '{}', '{}', '{}')"
+    db.query(query.format(*vals))
+    query = "UPDATE users SET ({}) = ('{}', '{}', '{}') WHERE chatid = {id}"
+    db.query(query.format(cols, *vals[1:-1], id=chatid))

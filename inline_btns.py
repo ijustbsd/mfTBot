@@ -1,6 +1,13 @@
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 
-course_btns = InlineKeyboardMarkup(inline_keyboard=[[
+spo_course = InlineKeyboardMarkup(inline_keyboard=[[
+    InlineKeyboardButton(text='1', callback_data='1'),
+    InlineKeyboardButton(text='2', callback_data='2'),
+    InlineKeyboardButton(text='3', callback_data='3'),
+    InlineKeyboardButton(text='4', callback_data='4'),
+]])
+
+bach_course = InlineKeyboardMarkup(inline_keyboard=[[
     InlineKeyboardButton(text='1', callback_data='1'),
     InlineKeyboardButton(text='2', callback_data='2'),
     InlineKeyboardButton(text='3', callback_data='3'),
@@ -96,3 +103,55 @@ fifth_btns = InlineKeyboardMarkup(inline_keyboard=[
         InlineKeyboardButton(text='КМА МАиП', callback_data='42')
     ]
 ])
+
+first_spo = InlineKeyboardMarkup(inline_keyboard=[
+    [
+        InlineKeyboardButton(text='ПКС-1', callback_data='11'),
+        InlineKeyboardButton(text='ПКС-2', callback_data='12')
+    ],
+    [
+        InlineKeyboardButton(text='ЭБУ', callback_data='21')
+    ]
+])
+
+second_spo = InlineKeyboardMarkup(inline_keyboard=[
+    [
+        InlineKeyboardButton(text='ПКС', callback_data='11')
+    ],
+    [
+        InlineKeyboardButton(text='ЭБУ-1', callback_data='21'),
+        InlineKeyboardButton(text='ЭБУ-2', callback_data='22')
+    ]
+])
+
+third_spo = InlineKeyboardMarkup(inline_keyboard=[
+    [
+        InlineKeyboardButton(text='ПКС', callback_data='11')
+    ],
+    [
+        InlineKeyboardButton(text='ЭБУ', callback_data='21')
+    ]
+])
+
+fourth_spo = InlineKeyboardMarkup(inline_keyboard=[
+    [
+        InlineKeyboardButton(text='ПКС', callback_data='11')
+    ]
+])
+
+qual_btns = InlineKeyboardMarkup(inline_keyboard=[[
+    InlineKeyboardButton(text='СПО', callback_data='spo'),
+    InlineKeyboardButton(text='Бакалавр', callback_data='bach')
+    # InlineKeyboardButton(text='Магистр', callback_data='master'),
+    # InlineKeyboardButton(text='Доп. образование', callback_data='add_edu')
+]])
+
+course_btns = {
+    "spo": spo_course,
+    "bach": bach_course
+}
+
+group_btns = {
+    "spo": (first_spo, second_spo, third_spo, fourth_spo),
+    "bach": (first_btns, second_btns, third_btns, fourth_btns, fifth_btns)
+}

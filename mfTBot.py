@@ -6,10 +6,10 @@ from time import sleep
 import telepot
 import telepot.helper
 from telepot.loop import MessageLoop
-from telepot.namedtuple import ReplyKeyboardRemove, InlineKeyboardMarkup, InlineKeyboardButton
+from telepot.namedtuple import (
+    ReplyKeyboardRemove, InlineKeyboardMarkup, InlineKeyboardButton)
 from telepot.delegate import (
-    per_chat_id, create_open, pave_event_space, include_callback_query_chat_id
-)
+    per_chat_id, create_open, pave_event_space, include_callback_query_chat_id)
 
 from libs.users import load_user, add_schedule, del_schedule
 from libs.stats import new_user, new_msg
@@ -38,8 +38,8 @@ def qual_to_word(qual):
     return titles[qual]
 
 
-def del_keyboard_gen(user_id):
-    titles = schedule_title(user_id)
+def del_keyboard_gen(chatid):
+    titles = schedule_title(chatid)
     btns = []
     for s in titles:
         callback = 'del_%d' % (titles.index(s))
@@ -99,22 +99,22 @@ class MathBot(telepot.helper.ChatHandler):
         for k in weekkeys:
             self.commands[k] = self.weekschd
 
-    def registration(self, user_id, qual=None, course=None, group=None):
+    def registration(self, chatid, qual=None, course=None, group=None):
         if qual:
             self.cancel_last()
-            self.users[user_id]["qual"] = qual
+            self.users[chatid]["qual"] = qual
             self.sender.sendMessage(qual_to_word(qual))
             sent = self.sender.sendMessage(
                 reg_msg_2,
-                reply_markup=course_btns[self.users[user_id]["qual"]]
+                reply_markup=course_btns[self.users[chatid]["qual"]]
             )
             self.editor = telepot.helper.Editor(self.bot, sent)
             self.edit_msg_ident = telepot.message_identifier(sent)
         elif course:
             self.cancel_last()
-            self.users[user_id]["course"] = course
+            self.users[chatid]["course"] = course
             self.sender.sendMessage(course)
-            q = self.users[user_id]["qual"]
+            q = self.users[chatid]["qual"]
             sent = self.sender.sendMessage(
                 reg_msg_3,
                 reply_markup=group_btns[q][int(course) - 1]
@@ -123,20 +123,20 @@ class MathBot(telepot.helper.ChatHandler):
             self.edit_msg_ident = telepot.message_identifier(sent)
         elif group:
             self.cancel_last()
-            self.users[user_id]["group"] = group
-            if self.users[user_id]["qual"] == "spo":
+            self.users[chatid]["group"] = group
+            if self.users[chatid]["qual"] == "spo":
                 self.sender.sendMessage(gr_to_dir("spo", group))
             else:
-                if int(self.users[user_id]["course"]) > 2:
+                if int(self.users[chatid]["course"]) > 2:
                     self.sender.sendMessage(gr_to_dir("bach", group))
                 else:
                     self.sender.sendMessage('.'.join(group))
-            user = self.users[user_id]
-            add_schedule(user_id, user["qual"], user["course"], user["group"])
+            user = self.users[chatid]
+            add_schedule(chatid, user["qual"], user["course"], user["group"])
             self.sender.sendMessage(reg_msg_4, reply_markup=self.keyboard)
             self.close()
         else:
-            self.users[user_id] = {
+            self.users[chatid] = {
                 "qual": "bach",
                 "course": "1",
                 "group": "41"
@@ -145,7 +145,7 @@ class MathBot(telepot.helper.ChatHandler):
             self.editor = telepot.helper.Editor(self.bot, sent)
             self.edit_msg_ident = telepot.message_identifier(sent)
 
-    def startcmd(self, chatid, cmd):
+    def startcmd(self, chatid, *kwargs):
         if not load_user(chatid):
             self.sender.sendMessage(
                 reg_msg_0,
@@ -154,7 +154,7 @@ class MathBot(telepot.helper.ChatHandler):
         else:
             self.sender.sendMessage(start_msg, reply_markup=self.keyboard)
 
-    def todaycmd(self, chatid, cmd):
+    def todaycmd(self, chatid, *kwargs):
         schedule = today_schedule(chatid)
         if len(schedule) == 1:
             self.sender.sendMessage(
@@ -169,7 +169,7 @@ class MathBot(telepot.helper.ChatHandler):
                     'Markdown',
                     reply_markup=self.keyboard)
 
-    def tomorrowcmd(self, chatid, cmd):
+    def tomorrowcmd(self, chatid, *kwargs):
         schedule = today_schedule(chatid, 1)
         if len(schedule) == 1:
             self.sender.sendMessage(
@@ -184,7 +184,7 @@ class MathBot(telepot.helper.ChatHandler):
                     'Markdown',
                     reply_markup=self.keyboard)
 
-    def weekcmd(self, chatid, cmd):
+    def weekcmd(self, *kwargs):
         self.sender.sendMessage(
             'Выберите день недели:',
             reply_markup=self.week_keyboard)
@@ -200,55 +200,55 @@ class MathBot(telepot.helper.ChatHandler):
             'Markdown',
             reply_markup=self.keyboard)
 
-    def bellscmd(self, chatid, cmd):
+    def bellscmd(self, *kwargs):
         self.sender.sendMessage(
             bells_schedule,
             'Markdown',
             reply_markup=self.keyboard)
 
-    def settingscmd(self, chatid, cmd):
+    def settingscmd(self, *kwargs):
         self.sender.sendMessage(
             settings_msg,
             'Markdown',
             reply_markup=self.other_keyboard)
 
-    def add_del_cmd(self, chatid, cmd):
+    def add_del_cmd(self, *kwargs):
         self.sender.sendMessage(
             'Выберите действие:',
             reply_markup=self.add_del_keyboard)
 
-    def distrcmd(self, chatid, cmd):
+    def distrcmd(self, *kwargs):
         self.sender.sendMessage(
             "Функция в разработке \U0001F527",
             'Markdown',
             reply_markup=self.keyboard)
 
-    def feedbackcmd(self, chatid, cmd):
+    def feedbackcmd(self, *kwargs):
         self.sender.sendMessage(
             feedback_msg,
             'Markdown',
             reply_markup=self.keyboard)
 
-    def updatecmd(self, chatid, cmd):
+    def updatecmd(self, *kwargs):
         self.sender.sendMessage(
             updates_msg,
             'Markdown',
             reply_markup=self.keyboard)
 
-    def backcmd(self, chatid, cmd):
+    def backcmd(self, *kwargs):
         self.sender.sendMessage(
             back_button_msg,
             'Markdown',
             reply_markup=self.keyboard)
 
-    def add_schd_cmd(self, chatid, cmd):
+    def add_schd_cmd(self, chatid, *kwargs):
         self.sender.sendMessage(
             'Какое расписание нужно добавить?',
             'Markdown',
             reply_markup=ReplyKeyboardRemove())
         self.registration(chatid)
 
-    def del_schd_cmd(self, chatid, cmd):
+    def del_schd_cmd(self, chatid, *kwargs):
         sent = self.sender.sendMessage(
             'Какое расписание нужно убрать?',
             'Markdown',
@@ -256,16 +256,16 @@ class MathBot(telepot.helper.ChatHandler):
         self.editor = telepot.helper.Editor(self.bot, sent)
         self.edit_msg_ident = telepot.message_identifier(sent)
 
-    def changecmd(self, chatid, cmd):
-        self.distrcmd(chatid, cmd)
+    def changecmd(self, *kwargs):
+        self.distrcmd()
 
-    def statscmd(self, chatid, cmd):
+    def statscmd(self, *kwargs):
         self.sender.sendMessage(
             get_stats_msg(),
             'Markdown',
             reply_markup=self.keyboard)
 
-    def errorcmd(self, chatid, cmd):
+    def errorcmd(self, *kwargs):
         self.sender.sendMessage(error_msg, reply_markup=self.keyboard)
 
     def answerer(self, chatid, cmd):
@@ -280,15 +280,15 @@ class MathBot(telepot.helper.ChatHandler):
 
     def on_chat_message(self, msg):
         content_type = telepot.glance(msg)[0]
-        user_id = telepot.glance(msg)[2]
+        chatid = telepot.glance(msg)[2]
         if content_type == 'text':
-            self.answerer(user_id, msg['text'])
-            new_msg(user_id, msg['text'])
+            self.answerer(chatid, msg['text'])
+            new_msg(chatid, msg['text'])
             userdata = msg['from']
             firstname = userdata.get('first_name')
             lastname = userdata.get('last_name')
             username = userdata.get('username')
-            new_user(user_id, firstname, lastname, username)
+            new_user(chatid, firstname, lastname, username)
         else:
             self.sender.sendMessage(error_msg, reply_markup=self.keyboard)
 

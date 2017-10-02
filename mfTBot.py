@@ -78,6 +78,27 @@ class MathBot(telepot.helper.ChatHandler):
             self.editor = None
             self.users = {}
 
+        self.commands = {
+            '/start': self.startcmd,
+            self.keyboard['keyboard'][0][0]: self.todaycmd,
+            self.keyboard['keyboard'][0][1]: self.tomorrowcmd,
+            self.keyboard['keyboard'][1][0]: self.weekcmd,
+            self.keyboard['keyboard'][2][0]: self.bellscmd,
+            self.keyboard['keyboard'][3][0]: self.settingscmd,
+            self.other_keyboard['keyboard'][0][0]: self.add_del_cmd,
+            self.other_keyboard['keyboard'][1][0]: self.distrcmd,
+            self.other_keyboard['keyboard'][2][0]: self.feedbackcmd,
+            self.other_keyboard['keyboard'][2][1]: self.updatecmd,
+            self.other_keyboard['keyboard'][3][0]: self.backcmd,
+            self.add_del_keyboard['keyboard'][0][0]: self.add_schd_cmd,
+            self.add_del_keyboard['keyboard'][1][0]: self.del_schd_cmd,
+            self.add_del_keyboard['keyboard'][2][0]: self.changecmd,
+            '/stats': self.statscmd
+        }
+        weekkeys = listmerge(self.week_keyboard['keyboard'])
+        for k in weekkeys:
+            self.commands[k] = self.weekschd
+
     def registration(self, user_id, qual=None, course=None, group=None):
         if qual:
             self.cancel_last()
@@ -124,128 +145,132 @@ class MathBot(telepot.helper.ChatHandler):
             self.editor = telepot.helper.Editor(self.bot, sent)
             self.edit_msg_ident = telepot.message_identifier(sent)
 
-    def answerer(self, user_id, cmd):
-        if cmd == '/start':
-            if not load_user(user_id):
-                self.sender.sendMessage(
-                    reg_msg_0,
-                    reply_markup=ReplyKeyboardRemove()
-                )
-                self.registration(user_id)
-            else:
-                self.sender.sendMessage(start_msg, reply_markup=self.keyboard)
-        elif cmd == self.keyboard['keyboard'][0][0]:
-            schedule = today_schedule(user_id)
-            if len(schedule) == 1:
-                self.sender.sendMessage(
-                    '*Расписание на сегодня:*\n%s' % (schedule[0]),
-                    'Markdown',
-                    reply_markup=self.keyboard
-                )
-            else:
-                titles = schedule_title(user_id)
-                for s, t in zip(today_schedule(user_id), titles):
-                    self.sender.sendMessage(
-                        '*Расписание на сегодня:\n(%s)*\n%s' % (t, s),
-                        'Markdown',
-                        reply_markup=self.keyboard
-                    )
-        elif cmd == self.keyboard['keyboard'][0][1]:
-            schedule = today_schedule(user_id, 1)
-            if len(schedule) == 1:
-                self.sender.sendMessage(
-                    '*Расписание на завтра:*\n%s' % (schedule[0]),
-                    'Markdown',
-                    reply_markup=self.keyboard
-                )
-            else:
-                titles = schedule_title(user_id)
-                for s, t in zip(today_schedule(user_id, 1), titles):
-                    self.sender.sendMessage(
-                        '*Расписание на завтра:\n(%s)*\n%s' % (t, s),
-                        'Markdown',
-                        reply_markup=self.keyboard
-                    )
-        elif cmd == self.keyboard['keyboard'][1][0]:
+    def startcmd(self, chatid, cmd):
+        if not load_user(chatid):
             self.sender.sendMessage(
-                'Выберите день недели:',
-                reply_markup=self.week_keyboard
-            )
-        elif cmd in listmerge(self.week_keyboard['keyboard']):
-            index = listmerge(self.week_keyboard['keyboard']).index(cmd)
-            titles = schedule_title(user_id)
-            output = days_schedule[index] + '\n'
-            for s, t in zip(week_schedule(user_id, index), titles):
-                output += '*%s*\n%s\n\n' % (t, s)
-            self.sender.sendMessage(
-                output,
-                'Markdown',
-                reply_markup=self.keyboard
-            )
-        elif cmd == self.keyboard['keyboard'][2][0]:
-            self.sender.sendMessage(
-                bells_schedule,
-                'Markdown',
-                reply_markup=self.keyboard
-            )
-        elif cmd == self.keyboard['keyboard'][3][0]:
-            self.sender.sendMessage(
-                settings_msg,
-                'Markdown',
-                reply_markup=self.other_keyboard
-            )
-        elif cmd == self.other_keyboard['keyboard'][0][0]:
-            self.sender.sendMessage(
-                'Выберите действие:',
-                reply_markup=self.add_del_keyboard
-            )
-        elif cmd in (self.other_keyboard['keyboard'][1][0], self.add_del_keyboard['keyboard'][2][0]):
-            self.sender.sendMessage(
-                "Функция в разработке \U0001F527",
-                'Markdown',
-                reply_markup=self.keyboard
-            )
-        elif cmd == self.other_keyboard['keyboard'][2][0]:
-            self.sender.sendMessage(
-                feedback_msg,
-                'Markdown',
-                reply_markup=self.keyboard
-            )
-        elif cmd == self.other_keyboard['keyboard'][2][1]:
-            self.sender.sendMessage(
-                updates_msg,
-                'Markdown',
-                reply_markup=self.keyboard
-            )
-        elif cmd == self.other_keyboard['keyboard'][3][0]:
-            self.sender.sendMessage(
-                back_button_msg,
-                'Markdown',
-                reply_markup=self.keyboard
-            )
-        elif cmd == self.add_del_keyboard['keyboard'][0][0]:
-            self.sender.sendMessage(
-                'Какое расписание нужно добавить?',
-                'Markdown',
-                reply_markup=ReplyKeyboardRemove()
-            )
-            self.registration(user_id)
-        elif cmd == self.add_del_keyboard['keyboard'][1][0]:
-            sent = self.sender.sendMessage(
-                'Какое расписание нужно убрать?',
-                'Markdown',
-                reply_markup=del_keyboard_gen(user_id)
-            )
-            self.editor = telepot.helper.Editor(self.bot, sent)
-            self.edit_msg_ident = telepot.message_identifier(sent)
-        elif cmd == '/stats' and str(user_id) in config.admins:
-            self.sender.sendMessage(
-                get_stats_msg(),
-                'Markdown',
-                reply_markup=self.keyboard
-            )
+                reg_msg_0,
+                reply_markup=ReplyKeyboardRemove())
+            self.registration(chatid)
         else:
-            self.sender.sendMessage(error_msg, reply_markup=self.keyboard)
+            self.sender.sendMessage(start_msg, reply_markup=self.keyboard)
+
+    def todaycmd(self, chatid, cmd):
+        schedule = today_schedule(chatid)
+        if len(schedule) == 1:
+            self.sender.sendMessage(
+                '*Расписание на сегодня:*\n%s' % (schedule[0]),
+                'Markdown',
+                reply_markup=self.keyboard)
+        else:
+            titles = schedule_title(chatid)
+            for s, t in zip(today_schedule(chatid), titles):
+                self.sender.sendMessage(
+                    '*Расписание на сегодня:\n(%s)*\n%s' % (t, s),
+                    'Markdown',
+                    reply_markup=self.keyboard)
+
+    def tomorrowcmd(self, chatid, cmd):
+        schedule = today_schedule(chatid, 1)
+        if len(schedule) == 1:
+            self.sender.sendMessage(
+                '*Расписание на завтра:*\n%s' % (schedule[0]),
+                'Markdown',
+                reply_markup=self.keyboard)
+        else:
+            titles = schedule_title(chatid)
+            for s, t in zip(today_schedule(chatid, 1), titles):
+                self.sender.sendMessage(
+                    '*Расписание на завтра:\n(%s)*\n%s' % (t, s),
+                    'Markdown',
+                    reply_markup=self.keyboard)
+
+    def weekcmd(self, chatid, cmd):
+        self.sender.sendMessage(
+            'Выберите день недели:',
+            reply_markup=self.week_keyboard)
+
+    def weekschd(self, chatid, cmd):
+        index = listmerge(self.week_keyboard['keyboard']).index(cmd)
+        titles = schedule_title(chatid)
+        output = days_schedule[index] + '\n'
+        for s, t in zip(week_schedule(chatid, index), titles):
+            output += '*%s*\n%s\n\n' % (t, s)
+        self.sender.sendMessage(
+            output,
+            'Markdown',
+            reply_markup=self.keyboard)
+
+    def bellscmd(self, chatid, cmd):
+        self.sender.sendMessage(
+            bells_schedule,
+            'Markdown',
+            reply_markup=self.keyboard)
+
+    def settingscmd(self, chatid, cmd):
+        self.sender.sendMessage(
+            settings_msg,
+            'Markdown',
+            reply_markup=self.other_keyboard)
+
+    def add_del_cmd(self, chatid, cmd):
+        self.sender.sendMessage(
+            'Выберите действие:',
+            reply_markup=self.add_del_keyboard)
+
+    def distrcmd(self, chatid, cmd):
+        self.sender.sendMessage(
+            "Функция в разработке \U0001F527",
+            'Markdown',
+            reply_markup=self.keyboard)
+
+    def feedbackcmd(self, chatid, cmd):
+        self.sender.sendMessage(
+            feedback_msg,
+            'Markdown',
+            reply_markup=self.keyboard)
+
+    def updatecmd(self, chatid, cmd):
+        self.sender.sendMessage(
+            updates_msg,
+            'Markdown',
+            reply_markup=self.keyboard)
+
+    def backcmd(self, chatid, cmd):
+        self.sender.sendMessage(
+            back_button_msg,
+            'Markdown',
+            reply_markup=self.keyboard)
+
+    def add_schd_cmd(self, chatid, cmd):
+        self.sender.sendMessage(
+            'Какое расписание нужно добавить?',
+            'Markdown',
+            reply_markup=ReplyKeyboardRemove())
+        self.registration(chatid)
+
+    def del_schd_cmd(self, chatid, cmd):
+        sent = self.sender.sendMessage(
+            'Какое расписание нужно убрать?',
+            'Markdown',
+            reply_markup=del_keyboard_gen(chatid))
+        self.editor = telepot.helper.Editor(self.bot, sent)
+        self.edit_msg_ident = telepot.message_identifier(sent)
+
+    def changecmd(self, chatid, cmd):
+        self.distrcmd(chatid, cmd)
+
+    def statscmd(self, chatid, cmd):
+        self.sender.sendMessage(
+            get_stats_msg(),
+            'Markdown',
+            reply_markup=self.keyboard)
+
+    def errorcmd(self, chatid, cmd):
+        self.sender.sendMessage(error_msg, reply_markup=self.keyboard)
+
+    def answerer(self, chatid, cmd):
+        answer = self.commands.get(cmd, self.errorcmd)
+        answer(chatid, cmd)
 
     def cancel_last(self):
         if self.editor:

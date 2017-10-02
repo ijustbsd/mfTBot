@@ -20,7 +20,7 @@ feedback_msg = """
 """
 updates_msg = """
 Вы можете следить за новостями и обновлениями бота здесь:
-t.me/mathfuck\_news
+t.me/mfbot\_news
 """
 
 stats_msg = """

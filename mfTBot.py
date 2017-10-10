@@ -163,7 +163,7 @@ class MathBot(telepot.helper.ChatHandler):
                 reply_markup=self.keyboard)
         else:
             titles = schedule_title(chatid)
-            for s, t in zip(today_schedule(chatid), titles):
+            for s, t in zip(schedule, titles):
                 self.sender.sendMessage(
                     '*Расписание на сегодня:\n(%s)*\n%s' % (t, s),
                     'Markdown',
@@ -178,7 +178,7 @@ class MathBot(telepot.helper.ChatHandler):
                 reply_markup=self.keyboard)
         else:
             titles = schedule_title(chatid)
-            for s, t in zip(today_schedule(chatid, 1), titles):
+            for s, t in zip(schedule, titles):
                 self.sender.sendMessage(
                     '*Расписание на завтра:\n(%s)*\n%s' % (t, s),
                     'Markdown',

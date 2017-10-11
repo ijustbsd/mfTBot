@@ -333,8 +333,8 @@ bot = telepot.DelegatorBot(config.TOKEN, [
             MathBot,
             timeout=10
         )
-    ]
-)
+    ])
+
 MessageLoop(bot).run_as_thread()
 
 while 1:

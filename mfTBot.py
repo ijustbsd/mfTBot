@@ -19,7 +19,7 @@ from libs.schedule import (
 )
 from answers import *
 from inline_btns import qual_btns, course_btns, group_btns
-import config
+from config import TOKEN
 
 
 def listmerge(lst):
@@ -92,8 +92,7 @@ class MathBot(telepot.helper.ChatHandler):
             self.other_keyboard['keyboard'][3][0]: self.backcmd,
             self.add_del_keyboard['keyboard'][0][0]: self.add_schd_cmd,
             self.add_del_keyboard['keyboard'][1][0]: self.del_schd_cmd,
-            self.add_del_keyboard['keyboard'][2][0]: self.changecmd,
-            '/stats': self.statscmd
+            self.add_del_keyboard['keyboard'][2][0]: self.changecmd
         }
         weekkeys = listmerge(self.week_keyboard['keyboard'])
         for k in weekkeys:
@@ -259,12 +258,6 @@ class MathBot(telepot.helper.ChatHandler):
     def changecmd(self, *kwargs):
         self.distrcmd()
 
-    def statscmd(self, *kwargs):
-        self.sender.sendMessage(
-            get_stats_msg(),
-            'Markdown',
-            reply_markup=self.keyboard)
-
     def errorcmd(self, *kwargs):
         self.sender.sendMessage(error_msg, reply_markup=self.keyboard)
 
@@ -325,7 +318,7 @@ class MathBot(telepot.helper.ChatHandler):
         global records
         records[self.id] = (self.count, self.edit_msg_ident, self.users)
 
-bot = telepot.DelegatorBot(config.TOKEN, [
+bot = telepot.DelegatorBot(TOKEN, [
     include_callback_query_chat_id(
         pave_event_space())(
             per_chat_id(types=['private']),

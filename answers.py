@@ -22,32 +22,3 @@ updates_msg = """
 Вы можете следить за новостями и обновлениями бота здесь:
 t.me/mfbot\_news
 """
-
-stats_msg = """
-*За сегодня:*
-Зарегистрировалось: {}
-Сообщений: {}
-Пользователей: {}
-
-*За всё время:*
-Зарегистрировалось: {}
-Сообщений: {}
-"""
-
-
-def get_stats_msg():
-    db = DBManager()
-    output = []
-    query = "SELECT COUNT(*) FROM users WHERE regdate = '{}'".format(
-        str(datetime.now().date()))
-    output.append(*db.query(query).fetchone())
-    query = "SELECT COUNT(*) FROM messages WHERE msgdate = '{}'".format(
-        str(datetime.now().date()))
-    output.append(*db.query(query).fetchone())
-    query = "SELECT chatid FROM messages GROUP BY chatid HAVING COUNT(*) > 0"
-    output.append(len(db.query(query).fetchall()))
-    query = "SELECT COUNT(*) FROM users"
-    output.append(*db.query(query).fetchone())
-    query = "SELECT COUNT(*) FROM messages"
-    output.append(*db.query(query).fetchone())
-    return stats_msg.format(*output)

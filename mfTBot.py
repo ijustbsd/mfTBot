@@ -17,7 +17,7 @@ from libs.schedule import (
     today_schedule, week_schedule, bells_schedule, gr_to_dir, schedule_title,
     days_schedule
 )
-from answers import *
+from answers import Answers as answ
 from inline_btns import qual_btns, course_btns, group_btns
 from config import TOKEN
 
@@ -104,7 +104,7 @@ class MathBot(telepot.helper.ChatHandler):
             self.users[chatid]["qual"] = qual
             self.sender.sendMessage(qual_to_word(qual))
             sent = self.sender.sendMessage(
-                reg_msg_2,
+                answ.reg_2,
                 reply_markup=course_btns[self.users[chatid]["qual"]]
             )
             self.editor = telepot.helper.Editor(self.bot, sent)
@@ -115,7 +115,7 @@ class MathBot(telepot.helper.ChatHandler):
             self.sender.sendMessage(course)
             q = self.users[chatid]["qual"]
             sent = self.sender.sendMessage(
-                reg_msg_3,
+                answ.reg_3,
                 reply_markup=group_btns[q][int(course) - 1]
             )
             self.editor = telepot.helper.Editor(self.bot, sent)
@@ -132,7 +132,7 @@ class MathBot(telepot.helper.ChatHandler):
                     self.sender.sendMessage('.'.join(group))
             user = self.users[chatid]
             add_schedule(chatid, user["qual"], user["course"], user["group"])
-            self.sender.sendMessage(reg_msg_4, reply_markup=self.keyboard)
+            self.sender.sendMessage(answ.reg_4, reply_markup=self.keyboard)
             self.close()
         else:
             self.users[chatid] = {
@@ -140,18 +140,18 @@ class MathBot(telepot.helper.ChatHandler):
                 "course": "1",
                 "group": "41"
             }
-            sent = self.sender.sendMessage(reg_msg_1, reply_markup=qual_btns)
+            sent = self.sender.sendMessage(answ.reg_1, reply_markup=qual_btns)
             self.editor = telepot.helper.Editor(self.bot, sent)
             self.edit_msg_ident = telepot.message_identifier(sent)
 
     def startcmd(self, chatid, *kwargs):
         if not load_user(chatid):
             self.sender.sendMessage(
-                reg_msg_0,
+                answ.reg_0,
                 reply_markup=ReplyKeyboardRemove())
             self.registration(chatid)
         else:
-            self.sender.sendMessage(start_msg, reply_markup=self.keyboard)
+            self.sender.sendMessage(answ.start, reply_markup=self.keyboard)
 
     def todaycmd(self, chatid, *kwargs):
         schedule = today_schedule(chatid)
@@ -207,7 +207,7 @@ class MathBot(telepot.helper.ChatHandler):
 
     def settingscmd(self, *kwargs):
         self.sender.sendMessage(
-            settings_msg,
+            answ.settings,
             'Markdown',
             reply_markup=self.other_keyboard)
 
@@ -224,19 +224,19 @@ class MathBot(telepot.helper.ChatHandler):
 
     def feedbackcmd(self, *kwargs):
         self.sender.sendMessage(
-            feedback_msg,
+            answ.feedback,
             'Markdown',
             reply_markup=self.keyboard)
 
     def updatecmd(self, *kwargs):
         self.sender.sendMessage(
-            updates_msg,
+            answ.updates,
             'Markdown',
             reply_markup=self.keyboard)
 
     def backcmd(self, *kwargs):
         self.sender.sendMessage(
-            back_button_msg,
+            answ.back_button,
             'Markdown',
             reply_markup=self.keyboard)
 
@@ -259,7 +259,7 @@ class MathBot(telepot.helper.ChatHandler):
         self.distrcmd()
 
     def errorcmd(self, *kwargs):
-        self.sender.sendMessage(error_msg, reply_markup=self.keyboard)
+        self.sender.sendMessage(answ.error, reply_markup=self.keyboard)
 
     def answerer(self, chatid, cmd):
         answer = self.commands.get(cmd, self.errorcmd)
@@ -283,7 +283,7 @@ class MathBot(telepot.helper.ChatHandler):
             username = userdata.get('username')
             new_user(chatid, firstname, lastname, username)
         else:
-            self.sender.sendMessage(error_msg, reply_markup=self.keyboard)
+            self.sender.sendMessage(answ.error, reply_markup=self.keyboard)
 
     def on_callback_query(self, msg):
         _query, from_id, data = telepot.glance(msg, flavor='callback_query')

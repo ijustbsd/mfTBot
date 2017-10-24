@@ -2,6 +2,8 @@
 Bot's answers
 """
 
+from libs.schedule import today_schedule, schedule_title
+
 class Answers():
     reg_0 = 'Привет! Похоже я не знаю тебя \U0001F614'
     reg_1 = 'Выбери квалификацию:'
@@ -21,3 +23,18 @@ class Answers():
     updates = (
         'Вы можете следить за новостями и обновлениями бота здесь:\n'
         't.me/mfbot\_news')
+
+    def __init__(self, chatid):
+        self.chatid = chatid
+
+    def today_msg(self, tomorrow=0):
+        schedule = today_schedule(self.chatid, tomorrow)
+        titles = schedule_title(self.chatid)
+        text = 'завтра' if tomorrow else 'сегодня'
+        if len(schedule) == 1:
+            return ('*Расписание на %s:*\n%s' % (text, schedule[0]), )
+        else:
+            result = ()
+            for s, t in zip(schedule, titles):
+                result += ('*Расписание на %s:\n(%s)*\n%s' % (text, t, s), )
+        return result

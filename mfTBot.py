@@ -154,34 +154,14 @@ class MathBot(telepot.helper.ChatHandler):
             self.sender.sendMessage(answ.start, reply_markup=self.keyboard)
 
     def todaycmd(self, chatid, *kwargs):
-        schedule = today_schedule(chatid)
-        if len(schedule) == 1:
-            self.sender.sendMessage(
-                '*Расписание на сегодня:*\n%s' % (schedule[0]),
-                'Markdown',
-                reply_markup=self.keyboard)
-        else:
-            titles = schedule_title(chatid)
-            for s, t in zip(schedule, titles):
-                self.sender.sendMessage(
-                    '*Расписание на сегодня:\n(%s)*\n%s' % (t, s),
-                    'Markdown',
-                    reply_markup=self.keyboard)
+        messages = answ(chatid).today_msg()
+        for msg in messages:
+            self.sender.sendMessage(msg, 'Markdown', reply_markup=self.keyboard)
 
     def tomorrowcmd(self, chatid, *kwargs):
-        schedule = today_schedule(chatid, 1)
-        if len(schedule) == 1:
-            self.sender.sendMessage(
-                '*Расписание на завтра:*\n%s' % (schedule[0]),
-                'Markdown',
-                reply_markup=self.keyboard)
-        else:
-            titles = schedule_title(chatid)
-            for s, t in zip(schedule, titles):
-                self.sender.sendMessage(
-                    '*Расписание на завтра:\n(%s)*\n%s' % (t, s),
-                    'Markdown',
-                    reply_markup=self.keyboard)
+        messages = answ(chatid).today_msg(1)
+        for msg in messages:
+            self.sender.sendMessage(msg, 'Markdown', reply_markup=self.keyboard)
 
     def weekcmd(self, *kwargs):
         self.sender.sendMessage(

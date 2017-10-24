@@ -13,7 +13,7 @@ from telepot.delegate import (
 
 from libs.users import load_user, add_schedule, del_schedule
 from libs.stats import new_user, new_msg
-from libs.schedule import bells_schedule, gr_to_dir, schedule_title
+from libs.schedule import gr_to_dir, schedule_title
 from answers import Answers as answ
 from inline_btns import qual_btns, course_btns, group_btns
 from config import TOKEN
@@ -161,9 +161,7 @@ class MathBot(telepot.helper.ChatHandler):
             self.sender.sendMessage(msg, 'Markdown', reply_markup=self.keyboard)
 
     def weekcmd(self, *kwargs):
-        self.sender.sendMessage(
-            'Выберите день недели:',
-            reply_markup=self.week_keyboard)
+        self.sender.sendMessage(answ.weekday, reply_markup=self.week_keyboard)
 
     def weekschd(self, chatid, cmd):
         index = listmerge(self.week_keyboard['keyboard']).index(cmd)
@@ -172,7 +170,7 @@ class MathBot(telepot.helper.ChatHandler):
 
     def bellscmd(self, *kwargs):
         self.sender.sendMessage(
-            bells_schedule,
+            answ.bells,
             'Markdown',
             reply_markup=self.keyboard)
 
@@ -271,13 +269,13 @@ class MathBot(telepot.helper.ChatHandler):
             )
             if len(titles) == 1:
                 self.sender.sendMessage(
-                    "Нельзя удалить единственное расписание!",
+                    answ.cant_rm,
                     reply_markup=self.keyboard
                 )
                 return
             del_schedule(from_id, data[4:])
             self.sender.sendMessage(
-                "Расписание успешно удалено!",
+                answ.success_rm,
                 reply_markup=self.keyboard
             )
         elif int(data) in range(1, 6):

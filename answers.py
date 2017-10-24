@@ -1,6 +1,6 @@
-from datetime import datetime
-
-from libs.db import DBManager
+"""
+Bot's answers
+"""
 
 reg_msg_0 = 'Привет! Похоже я не знаю тебя \U0001F614'
 reg_msg_1 = 'Выбери квалификацию:'

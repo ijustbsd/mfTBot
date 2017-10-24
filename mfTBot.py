@@ -286,7 +286,7 @@ class MathBot(telepot.helper.ChatHandler):
             self.sender.sendMessage(error_msg, reply_markup=self.keyboard)
 
     def on_callback_query(self, msg):
-        query, from_id, data = telepot.glance(msg, flavor='callback_query')
+        _query, from_id, data = telepot.glance(msg, flavor='callback_query')
         spo_gr = ('11', '12', '21', '22')
         bach_gr = ('11', '12', '21', '31', '32', '33', '41', '42', '51', '52')
         if data in ["spo", "bach", "master", "add_edu"]:

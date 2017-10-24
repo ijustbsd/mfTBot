@@ -10,7 +10,7 @@ class JSONTest():
         self.path = str(Path(__file__).parents[1]) + '/data/timetables/'
 
         self.files = []
-        for path, dirs, files in os.walk(self.path):
+        for path, _dirs, files in os.walk(self.path):
             for name in files:
                 self.files.append(os.path.join(path, name))
 

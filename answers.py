@@ -2,7 +2,8 @@
 Bot's answers
 """
 
-from libs.schedule import today_schedule, schedule_title
+from libs.schedule import (
+    today_schedule, week_schedule, schedule_title, days_schedule)
 
 class Answers():
     reg_0 = 'Привет! Похоже я не знаю тебя \U0001F614'
@@ -37,4 +38,11 @@ class Answers():
             result = ()
             for s, t in zip(schedule, titles):
                 result += ('*Расписание на %s:\n(%s)*\n%s' % (text, t, s), )
+        return result
+
+    def week_msg(self, index):
+        titles = schedule_title(self.chatid)
+        result = days_schedule[index] + '\n'
+        for s, t in zip(week_schedule(self.chatid, index), titles):
+            result += '*%s*\n%s\n\n' % (t, s)
         return result

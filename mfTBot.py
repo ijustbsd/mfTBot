@@ -13,10 +13,7 @@ from telepot.delegate import (
 
 from libs.users import load_user, add_schedule, del_schedule
 from libs.stats import new_user, new_msg
-from libs.schedule import (
-    today_schedule, week_schedule, bells_schedule, gr_to_dir, schedule_title,
-    days_schedule
-)
+from libs.schedule import bells_schedule, gr_to_dir, schedule_title
 from answers import Answers as answ
 from inline_btns import qual_btns, course_btns, group_btns
 from config import TOKEN
@@ -170,14 +167,8 @@ class MathBot(telepot.helper.ChatHandler):
 
     def weekschd(self, chatid, cmd):
         index = listmerge(self.week_keyboard['keyboard']).index(cmd)
-        titles = schedule_title(chatid)
-        output = days_schedule[index] + '\n'
-        for s, t in zip(week_schedule(chatid, index), titles):
-            output += '*%s*\n%s\n\n' % (t, s)
-        self.sender.sendMessage(
-            output,
-            'Markdown',
-            reply_markup=self.keyboard)
+        msg = answ(chatid).week_msg(index)
+        self.sender.sendMessage(msg, 'Markdown', reply_markup=self.keyboard)
 
     def bellscmd(self, *kwargs):
         self.sender.sendMessage(

@@ -263,21 +263,9 @@ class MathBot(telepot.helper.ChatHandler):
         elif "del" in data:
             self.cancel_last()
             titles = schedule_title(from_id)
-            self.sender.sendMessage(
-                titles[int(data[4:])],
-                reply_markup=self.keyboard
-            )
-            if len(titles) == 1:
-                self.sender.sendMessage(
-                    answ.cant_rm,
-                    reply_markup=self.keyboard
-                )
-                return
-            del_schedule(from_id, data[4:])
-            self.sender.sendMessage(
-                answ.success_rm,
-                reply_markup=self.keyboard
-            )
+            self.sender.sendMessage(titles[int(data[4:])], reply_markup=self.keyboard)
+            del_msg = del_schedule(from_id, data[4:])
+            self.sender.sendMessage(del_msg, reply_markup=self.keyboard)
         elif int(data) in range(1, 6):
             self.registration(from_id, course=data)
         elif data in spo_gr or bach_gr:

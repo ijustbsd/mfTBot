@@ -18,10 +18,13 @@ def add_schedule(user_id, qual, course, group):
 
 def del_schedule(user_id, num):
     scheds = load_user(user_id)
+    if len(scheds) == 1:
+        return 'Нельзя удалить единственное расписание!'
     db = DBManager()
     query = "DELETE FROM schedules WHERE chatid = {} AND qual = '{}' AND course = '{}' AND groupa = '{}'".format(
         user_id, *scheds[int(num)])
     db.query(query)
+    return 'Расписание успешно удалено!'
 
 
 def load_user(user_id):

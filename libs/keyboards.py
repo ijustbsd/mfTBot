@@ -175,5 +175,6 @@ class QualKeyboard:
     Inline keyboard for select of qualification
     '''
     markup = types.InlineKeyboardMarkup()
-    markup.row(types.InlineKeyboardButton(text='СПО', callback_data='spo'))
-    markup.row(types.InlineKeyboardButton(text='Бакалавр', callback_data='bach'))
+    markup.row(
+        types.InlineKeyboardButton(text='СПО', callback_data='spo'),
+        types.InlineKeyboardButton(text='Бакалавр', callback_data='bach'))

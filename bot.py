@@ -1,15 +1,18 @@
 # -*- coding: utf-8 -*-
 
+import logging
 import telebot
 
 from libs.users import load_user
 from libs.keyboards import (
     MainKeyboard, WeekKeyboard, SettingsKeyboard, SetSchedKeyboard, RmKeyboard)
 from answers import Answers as answ
-
 from config import TOKEN
 
 bot = telebot.TeleBot(TOKEN)
+
+logger = telebot.logger
+telebot.logger.setLevel(logging.DEBUG) # Outputs debug messages to console
 
 @bot.message_handler(commands=['start'])
 def start_msg(message):

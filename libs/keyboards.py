@@ -4,11 +4,11 @@ from telebot import types
 
 class MainKeyboard:
     btns_text = (
-        '\uD83D\uDCD8 Сегодня',
-        '\uD83D\uDCD7 Завтра',
-        '\uD83D\uDCC5 Расписание на другие дни',
-        '\uD83D\uDD14 Расписание звонков',
-        '\uD83D\uDEE0 Настройки')
+        '\U0001F4D8 Сегодня',
+        '\U0001F4D7 Завтра',
+        '\U0001F4C5 Расписание на другие дни',
+        '\U0001f514 Расписание звонков',
+        '\U0001f6e0 Настройки')
 
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     markup.row(*btns_text[:2])
@@ -27,10 +27,10 @@ class WeekKeyboard:
 
 class SettingsKeyboard:
     btns_text = (
-        '\uD83D\uDCDA Настроить расписание',
-        '\uD83D\uDCDD Обратная связь',
-        '\uD83C\uDF00 Обновления',
-        '\uD83D\uDD19 В главное меню')
+        '\U0001f4da Настроить расписание',
+        '\U0001f4dd Обратная связь',
+        '\U0001f300 Обновления',
+        '\U0001f519 В главное меню')
 
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     for s in btns_text:
@@ -41,8 +41,8 @@ class SetSchedKeyboard:
     btns_text = (
         '\u002B Добавить расписание',
         '\u2212 Удалить расписание',
-        '\uD83D\uDCB1 Изменить расписание',
-        '\uD83D\uDD19 В главное меню')
+        '\U0001f4b1 Изменить расписание',
+        '\U0001f519 В главное меню')
 
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     for s in btns_text:

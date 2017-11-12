@@ -3,6 +3,7 @@
 Keyboards and inline keyboards storage
 '''
 from telebot import types
+from libs.schedule import schedule_title
 
 class MainKeyboard:
     '''
@@ -183,3 +184,19 @@ class SpoGroups:
 
     fourth = types.InlineKeyboardMarkup()  # Fourth course
     fourth.row(types.InlineKeyboardButton(text='ПКС', callback_data='11'))
+
+
+class DeleteSchdKeyboard:
+    '''
+    Inline keyboards for SPO
+    '''
+    def __init__(self, chat_id):
+        titles = schedule_title(chat_id)
+        print(titles)
+        self.markup = types.InlineKeyboardMarkup()
+        for s in titles:
+            callback = 'del_{}'.format(titles.index(s))
+            self.markup.row(types.InlineKeyboardButton(text=s, callback_data=callback))
+
+    def markup(self):
+        return self.markup

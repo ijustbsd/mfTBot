@@ -3,19 +3,19 @@
 import logging
 import telebot
 
-from libs.users import load_user
+from libs.users import load_user, del_schedule
 from libs.stats import new_user
 from libs.keyboards import (
     MainKeyboard, WeekKeyboard, SettingsKeyboard, SetSchedKeyboard, RmKeyboard,
-    QualKeyboard, CourseKeyboards, BachelorsGroups, SpoGroups)
+    QualKeyboard, CourseKeyboards, BachelorsGroups, SpoGroups, DeleteSchdKeyboard)
 from libs.db import DBManager
 from answers import Answers as answ
 from config import TOKEN
 
 users = {}  # Global storage of users
 
-# logger = telebot.logger
-# telebot.logger.setLevel(logging.DEBUG) # Outputs debug messages to console
+logger = telebot.logger
+telebot.logger.setLevel(logging.DEBUG) # Outputs debug messages to console
 
 bot = telebot.TeleBot(TOKEN)
 
@@ -133,13 +133,15 @@ def back_msg(message):
 @bot.message_handler(func=lambda msg: msg.text == SetSchedKeyboard.btns_text[0])
 def add_schd(message):
     bot.send_message(message.chat.id, answ.add_select, reply_markup=RmKeyboard.markup)
-    bot.send_message(message.chat.id, answ.reg_1, reply_markup=QualKeyboard.markup)
+    users[message.chat.id] = {}
+    send_and_save_msg(message.chat.id, answ.reg_1, QualKeyboard.markup)
 
 
 @bot.message_handler(func=lambda msg: msg.text == SetSchedKeyboard.btns_text[1])
 def del_schd(message):
-    bot.send_message(message.chat.id, answ.del_select, reply_markup=RmKeyboard.markup)
-    # rm msg
+    chat_id = message.chat.id
+    users[message.chat.id] = {}
+    send_and_save_msg(message.chat.id, answ.del_select, DeleteSchdKeyboard(chat_id).markup)
 
 
 @bot.message_handler(func=lambda msg: msg.text == SetSchedKeyboard.btns_text[2])
@@ -167,6 +169,15 @@ def set_qual(call):
     delete_msg(call.from_user.id, msg_text)
     send_and_save_msg(call.from_user.id, answ.reg_2, markup)
 
+
+@bot.callback_query_handler(func=lambda call: 'del_' in call.data)
+def delete_schedule(call):
+    msg_text = get_text_from_kb(call.from_user.id, call.data)
+    delete_msg(call.from_user.id, msg_text)
+    msg_text = del_schedule(call.from_user.id, call.data[4:])
+    bot.send_message(call.from_user.id, msg_text, reply_markup=MainKeyboard.markup)
+
+
 @bot.callback_query_handler(func=lambda call: int(call.data) in range(1, 6))
 def set_course(call):
     users[call.from_user.id]['course'] = call.data
@@ -191,6 +202,7 @@ def set_course(call):
     delete_msg(call.from_user.id, msg_text)
     send_and_save_msg(call.from_user.id, answ.reg_3, markup)
 
+
 @bot.callback_query_handler(func=lambda call: int(call.data) in range(11, 53))
 def set_group(call):
     # Registration(call.from_user.id).set_group(call.data)
@@ -201,5 +213,6 @@ def set_group(call):
     msg_text = get_text_from_kb(call.from_user.id, call.data)
     delete_msg(call.from_user.id, msg_text)
     bot.send_message(call.from_user.id, answ.reg_4, reply_markup=MainKeyboard.markup)
+
 
 bot.polling()

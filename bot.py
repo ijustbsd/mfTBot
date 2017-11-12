@@ -15,14 +15,14 @@ from config import TOKEN
 users = {}  # Global storage of users
 
 logger = telebot.logger
-telebot.logger.setLevel(logging.DEBUG) # Outputs debug messages to console
+telebot.logger.setLevel(logging.DEBUG)  # Outputs debug messages to console
 
 bot = telebot.TeleBot(TOKEN)
 
 def get_text_from_kb(chat_id, callback):
-    """
+    '''
     Get text for messages in Inline Keyboards
-    """
+    '''
     for kb in users[chat_id]['markup'].keyboard:
         for btn in kb:
             if btn['callback_data'] == callback:
@@ -30,9 +30,9 @@ def get_text_from_kb(chat_id, callback):
 
 
 def registration(chatid, data):
-    """
+    '''
     Write user's data in database
-    """
+    '''
     try:
         qual = data['qual']
         course = data['course']
@@ -47,24 +47,24 @@ def registration(chatid, data):
 
 
 def send_and_save_msg(chat_id, text, markup):
-    """
+    '''
     Send message and saves its message_id and markup
-    """
+    '''
     msg = bot.send_message(chat_id, text, reply_markup=markup)
     users[msg.chat.id]['msg_id'] = msg.message_id
     users[msg.chat.id]['markup'] = markup
 
 
 def delete_msg(chat_id, text=''):
-    """
+    '''
     Delete the message and send 'text' if it not empty
-    """
+    '''
     bot.delete_message(chat_id, users[chat_id]['msg_id'])
     if text:
         bot.send_message(chat_id, text)
 
 
-""" Messages handlers """
+''' Messages handlers '''
 
 
 @bot.message_handler(commands=['start'])
@@ -154,7 +154,7 @@ def error_msg(message):
     bot.reply_to(message, answ.error, reply_markup=MainKeyboard.markup)
 
 
-""" Callbacks handlers """
+''' Callbacks handlers '''
 
 
 @bot.callback_query_handler(func=lambda call: call.data in ('spo', 'bach'))
@@ -205,7 +205,6 @@ def set_course(call):
 
 @bot.callback_query_handler(func=lambda call: int(call.data) in range(11, 53))
 def set_group(call):
-    # Registration(call.from_user.id).set_group(call.data)
     users[call.from_user.id]['group'] = call.data
     # Write data in database
     registration(call.from_user.id, users[call.from_user.id])

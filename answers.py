@@ -1,6 +1,6 @@
-"""
+'''
 Bot's answers
-"""
+'''
 
 from libs.schedule import (
     today_schedule, week_schedule, schedule_title, days_schedule)

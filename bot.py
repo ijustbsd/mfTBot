@@ -4,21 +4,77 @@ import logging
 import telebot
 
 from libs.users import load_user
+from libs.stats import new_user
 from libs.keyboards import (
-    MainKeyboard, WeekKeyboard, SettingsKeyboard, SetSchedKeyboard, RmKeyboard)
+    MainKeyboard, WeekKeyboard, SettingsKeyboard, SetSchedKeyboard, RmKeyboard,
+    QualKeyboard, CourseKeyboards, BachelorsGroups, SpoGroups)
+from libs.db import DBManager
 from answers import Answers as answ
 from config import TOKEN
 
+users = {}  # Global storage of users
+
+# logger = telebot.logger
+# telebot.logger.setLevel(logging.DEBUG) # Outputs debug messages to console
+
 bot = telebot.TeleBot(TOKEN)
 
-logger = telebot.logger
-telebot.logger.setLevel(logging.DEBUG) # Outputs debug messages to console
+def get_text_from_kb(chat_id, callback):
+    """
+    Get text for messages in Inline Keyboards
+    """
+    for kb in users[chat_id]['markup'].keyboard:
+        for btn in kb:
+            if btn['callback_data'] == callback:
+                return btn['text']
+
+
+def registration(chatid, data):
+    """
+    Write user's data in database
+    """
+    try:
+        qual = data['qual']
+        course = data['course']
+        group = data['group']
+    except KeyError:
+        logging.error("User's data is corrupt")
+        bot.send_message(chatid, answ.reg_error, reply_markup=QualKeyboard.markup)
+    db = DBManager()
+    query = "INSERT INTO schedules (chatid, faculty, qual, course, groupa) \
+    VALUES ({}, '{}', '{}', '{}', '{}')".format(chatid, 'math', qual, course, group)
+    db.query(query)
+
+
+def send_and_save_msg(chat_id, text, markup):
+    """
+    Send message and saves its message_id and markup
+    """
+    msg = bot.send_message(chat_id, text, reply_markup=markup)
+    users[msg.chat.id]['msg_id'] = msg.message_id
+    users[msg.chat.id]['markup'] = markup
+
+
+def delete_msg(chat_id, text=''):
+    """
+    Delete the message and send 'text' if it not empty
+    """
+    bot.delete_message(chat_id, users[chat_id]['msg_id'])
+    if text:
+        bot.send_message(chat_id, text)
+
+
+""" Messages handlers """
+
 
 @bot.message_handler(commands=['start'])
 def start_msg(message):
     if not load_user(message.from_user.id):
         bot.send_message(message.chat.id, answ.reg_0, reply_markup=RmKeyboard.markup)
-        # registration()
+        user = message.from_user
+        users[user.id] = {}
+        new_user(user.id, user.first_name, user.last_name, user.username)
+        send_and_save_msg(message.chat.id, answ.reg_1, QualKeyboard.markup)
     else:
         bot.send_message(message.chat.id, answ.start, reply_markup=MainKeyboard.markup)
 
@@ -77,7 +133,7 @@ def back_msg(message):
 @bot.message_handler(func=lambda msg: msg.text == SetSchedKeyboard.btns_text[0])
 def add_schd(message):
     bot.send_message(message.chat.id, answ.add_select, reply_markup=RmKeyboard.markup)
-    # self.registration(chatid)
+    bot.send_message(message.chat.id, answ.reg_1, reply_markup=QualKeyboard.markup)
 
 
 @bot.message_handler(func=lambda msg: msg.text == SetSchedKeyboard.btns_text[1])
@@ -94,5 +150,56 @@ def change_msg(message):
 @bot.message_handler(func=lambda msg: True)
 def error_msg(message):
     bot.reply_to(message, answ.error, reply_markup=MainKeyboard.markup)
+
+
+""" Callbacks handlers """
+
+
+@bot.callback_query_handler(func=lambda call: call.data in ('spo', 'bach'))
+def set_qual(call):
+    users[call.from_user.id]['qual'] = call.data
+    # Send select of course
+    if call.data == 'spo':
+        markup = CourseKeyboards.spo
+    else:
+        markup = CourseKeyboards.bach
+    msg_text = get_text_from_kb(call.from_user.id, call.data)
+    delete_msg(call.from_user.id, msg_text)
+    send_and_save_msg(call.from_user.id, answ.reg_2, markup)
+
+@bot.callback_query_handler(func=lambda call: int(call.data) in range(1, 6))
+def set_course(call):
+    users[call.from_user.id]['course'] = call.data
+    # Send select of group
+    markups = {
+        'spo': {
+            '1': SpoGroups.first,
+            '2': SpoGroups.second,
+            '3': SpoGroups.third,
+            '4': SpoGroups.fourth
+        },
+        'bach': {
+            '1': BachelorsGroups.first,
+            '2': BachelorsGroups.second,
+            '3': BachelorsGroups.third,
+            '4': BachelorsGroups.fourth,
+            '5': BachelorsGroups.fifth
+        }
+    }
+    markup = markups[users[call.from_user.id]['qual']][call.data]
+    msg_text = get_text_from_kb(call.from_user.id, call.data)
+    delete_msg(call.from_user.id, msg_text)
+    send_and_save_msg(call.from_user.id, answ.reg_3, markup)
+
+@bot.callback_query_handler(func=lambda call: int(call.data) in range(11, 53))
+def set_group(call):
+    # Registration(call.from_user.id).set_group(call.data)
+    users[call.from_user.id]['group'] = call.data
+    # Write data in database
+    registration(call.from_user.id, users[call.from_user.id])
+    # End of registration
+    msg_text = get_text_from_kb(call.from_user.id, call.data)
+    delete_msg(call.from_user.id, msg_text)
+    bot.send_message(call.from_user.id, answ.reg_4, reply_markup=MainKeyboard.markup)
 
 bot.polling()

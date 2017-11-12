@@ -70,17 +70,31 @@ class RmKeyboard:
     markup = types.ReplyKeyboardRemove()
 
 
+class QualKeyboard:
+    '''
+    Inline keyboard for select of qualification
+    '''
+    markup = types.InlineKeyboardMarkup()
+    markup.row(
+        types.InlineKeyboardButton(text='СПО', callback_data='spo'),
+        types.InlineKeyboardButton(text='Бакалавр', callback_data='bach'))
+
+
 class CourseKeyboards:
     '''
     Inline keyboards for select of course
     '''
     spo = types.InlineKeyboardMarkup()
+    spo_btns = []
     for i in range(1, 5):
-        spo.row(types.InlineKeyboardButton(text=str(i), callback_data=str(i)))
+        spo_btns.append(types.InlineKeyboardButton(text=str(i), callback_data=str(i)))
+    spo.row(*spo_btns)
 
     bach = types.InlineKeyboardMarkup()
+    bach_btns = []
     for i in range(1, 6):
-        bach.row(types.InlineKeyboardButton(text=str(i), callback_data=str(i)))
+        bach_btns.append(types.InlineKeyboardButton(text=str(i), callback_data=str(i)))
+    bach.row(*bach_btns)
 
 
 class BachelorsGroups:
@@ -169,12 +183,3 @@ class SpoGroups:
 
     fourth = types.InlineKeyboardMarkup()  # Fourth course
     fourth.row(types.InlineKeyboardButton(text='ПКС', callback_data='11'))
-
-class QualKeyboard:
-    '''
-    Inline keyboard for select of qualification
-    '''
-    markup = types.InlineKeyboardMarkup()
-    markup.row(
-        types.InlineKeyboardButton(text='СПО', callback_data='spo'),
-        types.InlineKeyboardButton(text='Бакалавр', callback_data='bach'))

@@ -121,11 +121,16 @@ def feedback_msg(message):
 
 
 @bot.message_handler(func=lambda msg: msg.text == SettingsKeyboard.btns_text[2])
+def feedback_msg(message):
+    bot.send_message(message.chat.id, answ.help_msg, parse_mode='Markdown', reply_markup=MainKeyboard.markup)
+
+
+@bot.message_handler(func=lambda msg: msg.text == SettingsKeyboard.btns_text[3])
 def updates_msg(message):
     bot.send_message(message.chat.id, answ.updates, reply_markup=MainKeyboard.markup)
 
 
-@bot.message_handler(func=lambda msg: msg.text == SettingsKeyboard.btns_text[3])
+@bot.message_handler(func=lambda msg: msg.text == SettingsKeyboard.btns_text[4])
 def back_msg(message):
     bot.send_message(message.chat.id, answ.back_button, reply_markup=MainKeyboard.markup)
 

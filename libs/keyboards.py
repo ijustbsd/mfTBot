@@ -41,11 +41,14 @@ class SettingsKeyboard:
     btns_text = (
         '\U0001f4da Настроить расписание',
         '\U0001f4dd Обратная связь',
+        '\U0001F198 Справка',
         '\U0001f300 Обновления',
         '\U0001f519 В главное меню')
 
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    for s in btns_text:
+    markup.row(*btns_text[:1])
+    markup.row(*btns_text[1:3])
+    for s in btns_text[3:]:
         markup.row(s)
 
 

@@ -39,7 +39,8 @@ def registration(chatid, data):
         group = data['group']
     except KeyError:
         logging.error("User's data is corrupt")
-        bot.send_message(chatid, answ.reg_error, reply_markup=QualKeyboard.markup)
+        send_and_save_msg(chatid, answ.reg_error, QualKeyboard.markup)
+        return
     db = DBManager()
     query = "INSERT INTO schedules (chatid, faculty, qual, course, groupa) \
     VALUES ({}, '{}', '{}', '{}', '{}')".format(chatid, 'math', qual, course, group)

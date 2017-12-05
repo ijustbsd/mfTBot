@@ -48,14 +48,16 @@ class DBManager():
         db = DBManager()
         today = datetime.date.today() + datetime.timedelta(days=tomorrow)
         weekday = today.weekday()
+        is_numerator = today.isocalendar()[1] % 2
         result = ()
         for tt in self.u_ttables.find({'chatid': chatid}):
             result += ({
                 'text': (tt['qualification_title'], tt['course'], tt['group_title']),
-                'data': tt['data']['numerator' if today.isocalendar()[1] % 2 else 'denominator'][weekday]
+                'data': tt['data']['numerator' if is_numerator else 'denominator'][weekday]
             },)
+        # Result format
         # result = ({
-        #     'data': [ ['1', 'title', 'hall', 'teacher'],  ['2', '', '', ''] ],
+        #     'data': [['1', 'title', 'hall', 'teacher'], ['2', '', '', '']],
         #     'text': ('qualification', 'course', 'group')
         # },)
         return result
@@ -64,7 +66,7 @@ class DBManager():
     def week_timetable(self, chatid, index):
         db = DBManager()
         days = ('понедельник', 'вторник', 'среду', 'четверг', 'пятницу', 'субботу', 'воскресенье')
-        result = ('*Расписание на ' + days[index] + ':*\n', )
+        result = (days[index],)
         for tt in self.u_ttables.find({'chatid': chatid}):
             if tt['data']['numerator'][index] == tt['data']['denominator'][index]:
                 result += ({
@@ -76,8 +78,9 @@ class DBManager():
                     'text': (tt['qualification_title'], tt['course'], tt['group_title']),
                     'data': (tt['data']['numerator'][index], tt['data']['denominator'][index])
                 },)
-        # result = ('*Расписание на понедельник:*\n', {
-        #     'data': ([ ['1', 'title', 'hall', 'teacher'], ['2', '', '', ''] ]),
+        # Result format
+        # result = ('понедельник', {
+        #     'data': ([['1', 'title', 'hall', 'teacher'], ['2', '', '', '']],),
         #     'text': ('qualification', 'course', 'group')
         # })
         return result

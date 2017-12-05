@@ -94,9 +94,8 @@ def help_msg(message):
 @bot.message_handler(func=lambda msg: msg.text == MainKeyboard.btns_text[1])
 def sched_on_day(message):
     tommorow = int(message.text == MainKeyboard.btns_text[1])
-    schedules = answ(message.chat.id).today_msg(tommorow)
-    for sched in schedules:
-        bot.send_message(message.chat.id, sched, parse_mode='Markdown')
+    msg = answ(message.chat.id).today_msg(tommorow)
+    bot.send_message(message.chat.id, msg, parse_mode='Markdown')
 
 
 @bot.message_handler(func=lambda msg: msg.text == MainKeyboard.btns_text[2])

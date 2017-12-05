@@ -3,20 +3,20 @@
 import logging
 import telebot
 
-from libs.users import load_user, del_schedule
+from libs.db import DBManager
+from libs.safedict import SafeDict
 from libs.keyboards import (
     MainKeyboard, WeekKeyboard, SettingsKeyboard, SetSchedKeyboard, RmKeyboard,
     QualKeyboard, CourseKeyboards, BachelorsGroups, SpoGroups, DeleteSchdKeyboard)
-from libs.db import DBManager
-from answers import Answers as answ
+from libs.answers import Answers as answ
 from config import TOKEN
-
-users = {}  # Global storage of users
 
 logger = telebot.logger
 telebot.logger.setLevel(logging.ERROR)
 
 db = DBManager()
+
+users = SafeDict()  # Global storage of users data
 
 bot = telebot.TeleBot(TOKEN)
 
@@ -24,24 +24,10 @@ def get_text_from_kb(chat_id, callback):
     '''
     Get text for messages in Inline Keyboards
     '''
-    for kb in users[chat_id]['markup'].keyboard:
+    for kb in users.get(chat_id, 'keyboard'):
         for btn in kb:
             if btn['callback_data'] == callback:
                 return btn['text']
-
-
-def registration(chatid, data):
-    '''
-    Write user's data in database
-    '''
-    try:
-        qual = data['qual']
-        course = data['course']
-        group = data['group']
-        db.add_timetable(chatid, qual, course, group)
-    except KeyError:
-        logging.error("User's data is corrupt")
-        send_and_save_msg(chatid, answ.reg_error, QualKeyboard.markup)
 
 
 def send_and_save_msg(chat_id, text, markup):
@@ -49,17 +35,15 @@ def send_and_save_msg(chat_id, text, markup):
     Send message and saves its message_id and markup
     '''
     msg = bot.send_message(chat_id, text, reply_markup=markup)
-    # users[msg.chat.id]['msg_id'] = msg.message_id
-    # users[msg.chat.id]['markup'] = markup
-    print('Type msg.chat.id' + type(msg.chat.id))
-    db.update_user({'chatid': msg.chat.id, 'msg_id': msg.message_id, 'markup': markup})
+    users.set(msg.chat.id, 'msg_id', msg.message_id)
+    users.set(msg.chat.id, 'keyboard', markup.keyboard)
 
 
 def delete_msg(chat_id, text=''):
     '''
     Delete the message and send 'text' if it not empty
     '''
-    bot.delete_message(chat_id, users[chat_id]['msg_id'])
+    bot.delete_message(chat_id, users.get(chat_id, 'msg_id'))
     if text:
         bot.send_message(chat_id, text)
 
@@ -72,14 +56,13 @@ def start_msg(message):
     if not db.load_user(message.from_user.id):
         bot.send_message(message.chat.id, answ.reg_0, reply_markup=RmKeyboard.markup)
         user = message.from_user
-        users[user.id] = {
+        userdata = {
             'chatid': user.id,
             'firstname': user.first_name,
             'lastname': user.last_name,
             'username': user.username
         }
-        print('Type user.id' + type(user.id))
-        db.update_user(users[user.id])
+        db.update_user(userdata)
         send_and_save_msg(message.chat.id, answ.reg_1, QualKeyboard.markup)
     else:
         bot.send_message(message.chat.id, answ.start, reply_markup=MainKeyboard.markup)
@@ -143,14 +126,12 @@ def back_msg(message):
 @bot.message_handler(func=lambda msg: msg.text == SetSchedKeyboard.btns_text[0])
 def add_schd(message):
     bot.send_message(message.chat.id, answ.add_select, reply_markup=RmKeyboard.markup)
-    users[message.chat.id] = {}
     send_and_save_msg(message.chat.id, answ.reg_1, QualKeyboard.markup)
 
 
 @bot.message_handler(func=lambda msg: msg.text == SetSchedKeyboard.btns_text[1])
 def del_schd(message):
     chat_id = message.chat.id
-    users[message.chat.id] = {}
     send_and_save_msg(message.chat.id, answ.del_select, DeleteSchdKeyboard(chat_id).markup)
 
 
@@ -169,7 +150,7 @@ def error_msg(message):
 
 @bot.callback_query_handler(func=lambda call: call.data in ('spo', 'bach'))
 def set_qual(call):
-    users[call.from_user.id]['qual'] = call.data
+    users.set(call.from_user.id, 'qual', call.data)
     # Send select of course
     if call.data == 'spo':
         markup = CourseKeyboards.spo
@@ -184,13 +165,16 @@ def set_qual(call):
 def delete_schedule(call):
     msg_text = get_text_from_kb(call.from_user.id, call.data)
     delete_msg(call.from_user.id, msg_text)
-    msg_text = del_schedule(call.from_user.id, call.data[4:])
+    if len(db.today_timetable(call.from_user.id)) == 1:
+        msg_text = answ.del_one_error
+    else:
+        msg_text = answ.del_succses if int(db.rm_timetable(call.data[4:])) else answ.del_wtf
     bot.send_message(call.from_user.id, msg_text, reply_markup=MainKeyboard.markup)
 
 
 @bot.callback_query_handler(func=lambda call: int(call.data) in range(1, 6))
 def set_course(call):
-    users[call.from_user.id]['course'] = call.data
+    users.set(call.from_user.id, 'course', call.data)
     # Send select of group
     markups = {
         'spo': {
@@ -207,7 +191,7 @@ def set_course(call):
             '5': BachelorsGroups.fifth
         }
     }
-    markup = markups[users[call.from_user.id]['qual']][call.data]
+    markup = markups[users.get(call.from_user.id, 'qual')][call.data]
     msg_text = get_text_from_kb(call.from_user.id, call.data)
     delete_msg(call.from_user.id, msg_text)
     send_and_save_msg(call.from_user.id, answ.reg_3, markup)
@@ -215,9 +199,10 @@ def set_course(call):
 
 @bot.callback_query_handler(func=lambda call: int(call.data) in range(11, 53))
 def set_group(call):
-    users[call.from_user.id]['group'] = call.data
+    users.set(call.from_user.id, 'group', call.data)
     # Write data in database
-    registration(call.from_user.id, users[call.from_user.id])
+    data = users.get(call.from_user.id)
+    db.add_timetable(call.from_user.id, data['qual'], data['course'], data['group'])
     # End of registration
     msg_text = get_text_from_kb(call.from_user.id, call.data)
     delete_msg(call.from_user.id, msg_text)

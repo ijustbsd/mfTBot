@@ -3,6 +3,7 @@
 import datetime
 
 import pymongo
+from bson.objectid import ObjectId
 
 class DBManager():
     def __init__(self):
@@ -36,12 +37,18 @@ class DBManager():
 
 
     def add_timetable(self, chatid: int, qual, course, group):
+        tt = {'chatid': chatid, 'qualification': qual, 'course': course, 'group': group}
+        if self.u_ttables.find_one(tt):
+            return
         ttable = self.g_ttables.find_one({'qualification': qual, 'course': course, 'group': group})
         ttable.pop('_id', None)
-        #  TODO: Check on duplicate!
         doc = {'chatid': chatid}
         doc.update(ttable)
         return self.u_ttables.insert_one(doc).inserted_id
+
+
+    def rm_timetable(self, _id):
+        return self.u_ttables.delete_one({'_id': ObjectId(_id)}).deleted_count
 
 
     def today_timetable(self, chatid, tomorrow=0):
@@ -52,6 +59,7 @@ class DBManager():
         result = ()
         for tt in self.u_ttables.find({'chatid': chatid}):
             result += ({
+                '_id': tt['_id'],
                 'text': (tt['qualification_title'], tt['course'], tt['group_title']),
                 'data': tt['data']['numerator' if is_numerator else 'denominator'][weekday]
             },)

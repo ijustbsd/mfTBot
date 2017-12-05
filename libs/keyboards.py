@@ -192,12 +192,14 @@ class DeleteSchdKeyboard:
     '''
     def __init__(self, chat_id):
         db = DBManager()
-        titles = db.today_timetable(chat_id)
-        print(titles)
+        ttable = db.today_timetable(chat_id)
         self.markup = types.InlineKeyboardMarkup()
-        for s in titles:
-            callback = 'del_{}'.format(titles.index(s))
-            self.markup.row(types.InlineKeyboardButton(text=s, callback_data=callback))
+        for tt in ttable:
+            text = tt['text']
+            callback = 'del_{}'.format(tt['_id'])
+            self.markup.row(
+                types.InlineKeyboardButton(
+                    text='{}, {} курс, группа {}'.format(*text), callback_data=callback))
 
     def markup(self):
         return self.markup

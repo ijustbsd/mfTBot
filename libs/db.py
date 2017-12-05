@@ -1,53 +1,83 @@
-import sqlite3
-from config import PATH
+# -*- coding: utf-8 -*-
 
-users = """
-CREATE TABLE IF NOT EXISTS 'users' (
-'chatid' INTEGER NOT NULL UNIQUE,
-'firstname' TEXT,
-'lastname' TEXT,
-'username' TEXT,
-'regdate' TEXT
-)
-"""
+import datetime
 
-messages = """
-CREATE TABLE IF NOT EXISTS 'messages' (
-'id' INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-'chatid' INTEGER NOT NULL,
-'command' TEXT NOT NULL,
-'msgdate' TEXT NOT NULL,
-'msgtime' TEXT NOT NULL
-)
-"""
-
-schedules = """
-CREATE TABLE IF NOT EXISTS 'schedules' (
-'chatid' INTEGER NOT NULL,
-'faculty' TEXT NOT NULL,
-'qual' TEXT NOT NULL,
-'course' TEXT NOT NULL,
-'groupa' TEXT NOT NULL
-)
-"""
-
-tables = (users, messages, schedules)
-
+import pymongo
 
 class DBManager():
     def __init__(self):
         try:
-            self.connect = sqlite3.connect(PATH + '/data/db.sqlite3')
-        except sqlite3.Error as e:
+            self.client = pymongo.MongoClient()
+        except pymongo.errors.ConnectionFailure as e:
             print(e)
-        self.cursor = self.connect.cursor()
-        for t in tables:
-            self.cursor.execute(t)
+        self.db = self.client.mfbot_db
+        #  Collections
+        self.g_ttables = self.db.general_timetables
+        self.u_ttables = self.db.users_timetables
+        self.users = self.db.users
+        self.messages = self.db.messages
 
-    def query(self, arg):
-        self.cursor.execute(arg)
-        self.connect.commit()
-        return self.cursor
 
-    def __del__(self):
-        self.connect.close()
+    def load_user(self, chatid: int):
+        return self.users.find_one({"chatid": chatid})
+
+
+    def update_user(self, data):
+        return self.users.update_one({'chatid': data['chatid']}, {'$set': data}, upsert=True)
+
+
+    def add_message(self, chatid: int, text):
+        msg = {
+            'from': chatid,
+            'text': text,
+            'date': str(datetime.datetime.utcnow())
+        }
+        return self.messages.insert_one(msg)
+
+
+    def add_timetable(self, chatid: int, qual, course, group):
+        ttable = self.g_ttables.find_one({'qualification': qual, 'course': course, 'group': group})
+        ttable.pop('_id', None)
+        #  TODO: Check on duplicate!
+        doc = {'chatid': chatid}
+        doc.update(ttable)
+        return self.u_ttables.insert_one(doc).inserted_id
+
+
+    def today_timetable(self, chatid, tomorrow=0):
+        db = DBManager()
+        today = datetime.date.today() + datetime.timedelta(days=tomorrow)
+        weekday = today.weekday()
+        result = ()
+        for tt in self.u_ttables.find({'chatid': chatid}):
+            result += ({
+                'text': (tt['qualification_title'], tt['course'], tt['group_title']),
+                'data': tt['data']['numerator' if today.isocalendar()[1] % 2 else 'denominator'][weekday]
+            },)
+        # result = ({
+        #     'data': [ ['1', 'title', 'hall', 'teacher'],  ['2', '', '', ''] ],
+        #     'text': ('qualification', 'course', 'group')
+        # },)
+        return result
+
+
+    def week_timetable(self, chatid, index):
+        db = DBManager()
+        days = ('понедельник', 'вторник', 'среду', 'четверг', 'пятницу', 'субботу', 'воскресенье')
+        result = ('*Расписание на ' + days[index] + ':*\n', )
+        for tt in self.u_ttables.find({'chatid': chatid}):
+            if tt['data']['numerator'][index] == tt['data']['denominator'][index]:
+                result += ({
+                    'text': (tt['qualification_title'], tt['course'], tt['group_title']),
+                    'data': (tt['data']['numerator'][index],)
+                },)
+            else:
+                result += ({
+                    'text': (tt['qualification_title'], tt['course'], tt['group_title']),
+                    'data': (tt['data']['numerator'][index], tt['data']['denominator'][index])
+                },)
+        # result = ('*Расписание на понедельник:*\n', {
+        #     'data': ([ ['1', 'title', 'hall', 'teacher'], ['2', '', '', ''] ]),
+        #     'text': ('qualification', 'course', 'group')
+        # })
+        return result

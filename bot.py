@@ -4,7 +4,6 @@ import logging
 import telebot
 
 from libs.users import load_user, del_schedule
-from libs.stats import new_user
 from libs.keyboards import (
     MainKeyboard, WeekKeyboard, SettingsKeyboard, SetSchedKeyboard, RmKeyboard,
     QualKeyboard, CourseKeyboards, BachelorsGroups, SpoGroups, DeleteSchdKeyboard)
@@ -16,6 +15,8 @@ users = {}  # Global storage of users
 
 logger = telebot.logger
 telebot.logger.setLevel(logging.ERROR)
+
+db = DBManager()
 
 bot = telebot.TeleBot(TOKEN)
 
@@ -37,14 +38,10 @@ def registration(chatid, data):
         qual = data['qual']
         course = data['course']
         group = data['group']
+        db.add_timetable(chatid, qual, course, group)
     except KeyError:
         logging.error("User's data is corrupt")
         send_and_save_msg(chatid, answ.reg_error, QualKeyboard.markup)
-        return
-    db = DBManager()
-    query = "INSERT INTO schedules (chatid, faculty, qual, course, groupa) \
-    VALUES ({}, '{}', '{}', '{}', '{}')".format(chatid, 'math', qual, course, group)
-    db.query(query)
 
 
 def send_and_save_msg(chat_id, text, markup):
@@ -52,8 +49,10 @@ def send_and_save_msg(chat_id, text, markup):
     Send message and saves its message_id and markup
     '''
     msg = bot.send_message(chat_id, text, reply_markup=markup)
-    users[msg.chat.id]['msg_id'] = msg.message_id
-    users[msg.chat.id]['markup'] = markup
+    # users[msg.chat.id]['msg_id'] = msg.message_id
+    # users[msg.chat.id]['markup'] = markup
+    print('Type msg.chat.id' + type(msg.chat.id))
+    db.update_user({'chatid': msg.chat.id, 'msg_id': msg.message_id, 'markup': markup})
 
 
 def delete_msg(chat_id, text=''):
@@ -70,11 +69,17 @@ def delete_msg(chat_id, text=''):
 
 @bot.message_handler(commands=['start'])
 def start_msg(message):
-    if not load_user(message.from_user.id):
+    if not db.load_user(message.from_user.id):
         bot.send_message(message.chat.id, answ.reg_0, reply_markup=RmKeyboard.markup)
         user = message.from_user
-        users[user.id] = {}
-        new_user(user.id, user.first_name, user.last_name, user.username)
+        users[user.id] = {
+            'chatid': user.id,
+            'firstname': user.first_name,
+            'lastname': user.last_name,
+            'username': user.username
+        }
+        print('Type user.id' + type(user.id))
+        db.update_user(users[user.id])
         send_and_save_msg(message.chat.id, answ.reg_1, QualKeyboard.markup)
     else:
         bot.send_message(message.chat.id, answ.start, reply_markup=MainKeyboard.markup)

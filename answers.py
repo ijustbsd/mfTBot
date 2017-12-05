@@ -2,8 +2,7 @@
 Bot's answers
 '''
 
-from libs.schedule import (
-    today_schedule, week_schedule, schedule_title, days_schedule)
+from libs.db import DBManager
 
 class Answers():
     reg_0 = 'Привет! Похоже я не знаю тебя \U0001F614'
@@ -47,22 +46,25 @@ class Answers():
 
     def __init__(self, chatid):
         self.chatid = chatid
+        self.db = DBManager()
+
+    def _formatter(self, data):
+        return str(data['data'])
 
     def today_msg(self, tomorrow=0):
-        schedule = today_schedule(self.chatid, tomorrow)
-        titles = schedule_title(self.chatid)
+        ttable = self.db.today_timetable(self.chatid, tomorrow)
         text = 'завтра' if tomorrow else 'сегодня'
-        if len(schedule) == 1:
-            return ('*Расписание на %s:*\n%s' % (text, schedule[0]), )
+        if len(ttable) == 1:
+            return ('*Расписание на {}:*\n{}'.format(text, str(ttable[0]['data'])),)
         else:
             result = ()
-            for s, t in zip(schedule, titles):
-                result += ('*Расписание на %s:\n(%s)*\n%s' % (text, t, s), )
+            for tt in ttable:
+                result += ('*Расписание на {}:*\n{}'.format(text, str(ttable[0]['data'])),)
         return result
 
     def week_msg(self, index):
-        titles = schedule_title(self.chatid)
-        result = days_schedule[index] + '\n'
-        for s, t in zip(week_schedule(self.chatid, index), titles):
-            result += '*%s*\n%s\n\n' % (t, s)
+        ttable = self.db.week_timetable(self.chatid, index)
+        result = ttable[0]
+        for tt in ttable[1:]:
+            result += self._formatter(tt)
         return result

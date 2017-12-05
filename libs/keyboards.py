@@ -3,7 +3,7 @@
 Keyboards and inline keyboards storage
 '''
 from telebot import types
-from libs.schedule import schedule_title
+from libs.db import DBManager
 
 class MainKeyboard:
     '''
@@ -191,7 +191,8 @@ class DeleteSchdKeyboard:
     Inline keyboards for SPO
     '''
     def __init__(self, chat_id):
-        titles = schedule_title(chat_id)
+        db = DBManager()
+        titles = db.today_timetable(chat_id)
         print(titles)
         self.markup = types.InlineKeyboardMarkup()
         for s in titles:

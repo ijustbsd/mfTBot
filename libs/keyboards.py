@@ -16,7 +16,7 @@ class MainKeyboard:
         '\U0001f514 Расписание звонков',
         '\U0001f6e0 Настройки')
 
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    markup = types.ReplyKeyboardMarkup()
     markup.row(*btns_text[:2])
     for s in btns_text[2:]:
         markup.row(s)
@@ -28,7 +28,7 @@ class WeekKeyboard:
     '''
     btns_text = ('Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Суббота', 'Воскресенье')
 
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    markup = types.ReplyKeyboardMarkup()
     markup.row(*btns_text[:5])
     for s in btns_text[5:]:
         markup.row(s)
@@ -44,7 +44,7 @@ class SettingsKeyboard:
         '\U0001f300 Обновления',
         '\U0001f519 В главное меню')
 
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    markup = types.ReplyKeyboardMarkup()
     for s in btns_text:
         markup.row(s)
 
@@ -59,7 +59,7 @@ class SetSchedKeyboard:
         '\U0001f4b1 Изменить расписание',
         '\U0001f519 В главное меню')
 
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    markup = types.ReplyKeyboardMarkup()
     for s in btns_text:
         markup.row(s)
 

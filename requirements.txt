@@ -1,0 +1,2 @@
+pymongo==3.5.1
+pyTelegramBotAPI==3.5.1

@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import datetime
+
 import logging
 import telebot
 
@@ -60,7 +62,8 @@ def start_msg(message):
             'chatid': user.id,
             'firstname': user.first_name,
             'lastname': user.last_name,
-            'username': user.username
+            'username': user.username,
+            'regdate': str(datetime.datetime.utcnow())
         }
         db.update_user(userdata)
         send_and_save_msg(message.chat.id, answ.reg_1, QualKeyboard.markup)

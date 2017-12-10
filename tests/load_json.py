@@ -1,6 +1,8 @@
-"""
+# -*- coding: utf-8 -*-
+'''
 Testing loading JSON files in data/timetables/
-"""
+'''
+
 import os
 import json
 from pathlib import Path
@@ -17,6 +19,7 @@ class JSONTest():
         self.complete = True
         for f in self.files:
             self.test(f)
+
 
     def test(self, path):
         try:

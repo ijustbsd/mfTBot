@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+'''
+Storage, with synchronizing to database.
+'''
+
 import pymongo
 
 class SafeDict:

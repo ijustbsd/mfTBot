@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 '''
-Keyboards and inline keyboards storage
+Keyboards and inline keyboards storage.
 '''
+
 from telebot import types
 from libs.db import DBManager
 
@@ -200,6 +201,3 @@ class DeleteSchdKeyboard:
             self.markup.row(
                 types.InlineKeyboardButton(
                     text='{}, {} курс, группа {}'.format(*text), callback_data=callback))
-
-    def markup(self):
-        return self.markup

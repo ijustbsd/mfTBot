@@ -5,6 +5,17 @@ Print all timetables in the group
 
 import pymongo
 
+def _formatter(lessons):
+    day = ''
+    for l in lessons:
+        day += '{num}. {title} {hall}\n'.format(
+            num=l[0],
+            title=l[1] or '-',
+            hall='[Ауд. ' + l[2] + ']' if l[2] else '')
+    if day == '. - \n':
+        day = 'Выходной :)\n'
+    return day
+
 class GroupTTableTest():
     def __init__(self):
         try:
@@ -13,19 +24,6 @@ class GroupTTableTest():
             print(e)
         self.db = self.client.mfbot_db
         self.g_ttables = self.db.general_timetables
-
-
-    def _formatter(self, lessons):
-        day = ''
-        for l in lessons:
-            day += '{num}. {title} {hall}\n'.format(
-                num=l[0],
-                title=l[1] or '-',
-                hall='[Ауд. ' + l[2] + ']' if l[2] else ''
-            )
-        if day == '. - \n':
-            day = 'Выходной :)\n'
-        return day
 
 
     def group_choice(self):
@@ -52,10 +50,10 @@ class GroupTTableTest():
         for i in range(0, 7):
             print('\n[:: ' + days[i] + ' ::]\n')
             if data['numerator'][i] == data['denominator'][i]:
-                print(self._formatter(data['numerator'][i]))
+                print(_formatter(data['numerator'][i]))
             else:
-                print(self._formatter(data['numerator'][i]))
-                print(self._formatter(data['denominator'][i]))
+                print(_formatter(data['numerator'][i]))
+                print(_formatter(data['denominator'][i]))
 
 
 if __name__ == "__main__":

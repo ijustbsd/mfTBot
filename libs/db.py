@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+'''
+Working with database.
+'''
 
 import datetime
 
@@ -52,7 +55,6 @@ class DBManager():
 
 
     def today_timetable(self, chatid, tomorrow=0):
-        db = DBManager()
         today = datetime.date.today() + datetime.timedelta(days=tomorrow)
         weekday = today.weekday()
         is_numerator = today.isocalendar()[1] % 2
@@ -72,7 +74,6 @@ class DBManager():
 
 
     def week_timetable(self, chatid, index):
-        db = DBManager()
         days = ('понедельник', 'вторник', 'среду', 'четверг', 'пятницу', 'субботу', 'воскресенье')
         result = (days[index],)
         for tt in self.u_ttables.find({'chatid': chatid}):

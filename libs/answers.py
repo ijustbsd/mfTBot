@@ -1,8 +1,20 @@
+# -*- coding: utf-8 -*-
 '''
-Bot's answers
+Bot's answers.
 '''
 
 from libs.db import DBManager
+
+def _formatter(lessons):
+    result = ''
+    for l in lessons:
+        result += '{num}. {title} {hall}\n'.format(
+            num=l[0],
+            title=l[1] or '-',
+            hall='\[Ауд. ' + l[2] + ']' if l[2] else '')
+    if result == '. - \n':
+        result = 'Выходной :)'
+    return result
 
 class Answers():
     reg_0 = 'Привет! Похоже я не знаю тебя \U0001F614'
@@ -47,29 +59,20 @@ class Answers():
     del_one_error = 'Нельзя удалить единственное расписание!'
     del_wtf = 'Что-то прошло не так \U0001F614 Попробуй ещё раз!'
 
+
     def __init__(self, chatid):
         self.chatid = chatid
         self.db = DBManager()
 
-    def _formatter(self, lessons):
-        result = ''
-        for l in lessons:
-            result += '{num}. {title} {hall}\n'.format(
-                num=l[0],
-                title=l[1] or '-',
-                hall='\[Ауд. ' + l[2] + ']' if l[2] else ''
-            )
-            if result == '. - \n':
-                result = 'Выходной :)'
-        return result
 
     def today_msg(self, tomorrow=0):
         ttable = self.db.today_timetable(self.chatid, tomorrow)
         result = '*Расписание на {}:*\n'.format('завтра' if tomorrow else 'сегодня')
         group_title = '*({}, {} курс, группа {})*\n' if len(ttable) != 1 else ''
         for tt in ttable:
-            result += group_title.format(*tt['text']) + self._formatter(tt['data']) + '\n'
+            result += group_title.format(*tt['text']) + _formatter(tt['data']) + '\n'
         return result
+
 
     def week_msg(self, index):
         ttable = self.db.week_timetable(self.chatid, index)
@@ -77,9 +80,9 @@ class Answers():
         group_title = '\n*({}, {} курс, группа {})*\n' if len(ttable) != 1 else ''
         for tt in ttable[1:]:
             if len(tt['data']) == 1:
-                result += group_title.format(*tt['text']) + self._formatter(tt['data'][0]) + '\n'
+                result += group_title.format(*tt['text']) + _formatter(tt['data'][0]) + '\n'
             else:
                 result += group_title.format(*tt['text']) +\
-                '*Числитель:*\n' + self._formatter(tt['data'][0]) +\
-                '*Знаменатель:*\n' + self._formatter(tt['data'][1])
+                '*Числитель:*\n' + _formatter(tt['data'][0]) +\
+                '*Знаменатель:*\n' + _formatter(tt['data'][1])
         return result

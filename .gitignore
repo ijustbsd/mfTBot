@@ -1,5 +1,4 @@
-VENV/
-__pycache__/
+.venv
+__pycache__
 config.py
-/data/db.sqlite3
 .vscode

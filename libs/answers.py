@@ -70,7 +70,7 @@ class Answers():
         result = '*Расписание на {}:*\n'.format('завтра' if tomorrow else 'сегодня')
         group_title = '*({}, {} курс, группа {})*\n' if len(ttable) != 1 else ''
         for tt in ttable:
-            result += group_title.format(*tt['text']) + _formatter(tt['data']) + '\n'
+            result += group_title.format(*tt['text']) + _formatter(tt['data']) + '\n\n'
         return result
 
 

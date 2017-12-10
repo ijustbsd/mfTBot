@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import datetime
-
 import logging
+import ssl
+
 import telebot
+from aiohttp import web
 
 from libs.db import DBManager
 from libs.safedict import SafeDict
@@ -11,7 +13,7 @@ from libs.keyboards import (
     MainKeyboard, WeekKeyboard, SettingsKeyboard, SetSchedKeyboard, RmKeyboard,
     QualKeyboard, CourseKeyboards, BachelorsGroups, SpoGroups, DeleteSchdKeyboard)
 from libs.answers import Answers as answ
-from config import TOKEN
+from config import TOKEN, USE_LONG_POLLING, URL, WH_SSL_CERT, WH_SSL_PRIV, WH_LISTEN, WH_PORT
 
 logger = telebot.logger
 telebot.logger.setLevel(logging.ERROR)
@@ -211,5 +213,27 @@ def set_group(call):
     delete_msg(call.from_user.id, msg_text)
     bot.send_message(call.from_user.id, answ.reg_4, reply_markup=MainKeyboard.markup)
 
+if USE_LONG_POLLING:
+    bot.polling()
+else:
+    app = web.Application()
 
-bot.polling()
+    async def handle(request):
+        if request.match_info.get('token') == bot.token:
+            request_body_dict = await request.json()
+            update = telebot.types.Update.de_json(request_body_dict)
+            bot.process_new_updates([update])
+            return web.Response()
+        else:
+            return web.Response(status=403)
+
+    app.router.add_post('/{token}/', handle)
+
+    bot.remove_webhook()
+
+    bot.set_webhook(url=URL, certificate=open(WH_SSL_CERT, 'r'))
+
+    context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+    context.load_cert_chain(WH_SSL_CERT, WH_SSL_PRIV)
+
+    web.run_app(app, host=WH_LISTEN, port=WH_PORT, ssl_context=context,)

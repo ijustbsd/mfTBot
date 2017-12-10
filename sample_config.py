@@ -9,7 +9,6 @@ USE_LONG_POLLING = True  # Change on False for using webhooks
 
 WH_HOST = '<ip/host where the bot is running>'
 WH_PORT = 8443  # 443, 80, 88 or 8443 (port need to be 'open')
-WH_LISTEN = '0.0.0.0'  # In some VPS you may need to put here the IP addr
 
 WH_SSL_CERT = './webhook_cert.pem'  # Path to the ssl certificate
 WH_SSL_PRIV = './webhook_pkey.pem'  # Path to the ssl private key

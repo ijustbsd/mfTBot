@@ -16,7 +16,7 @@ from libs.keyboards import (
     MainKeyboard, WeekKeyboard, SettingsKeyboard, SetSchedKeyboard, RmKeyboard,
     QualKeyboard, CourseKeyboards, BachelorsGroups, SpoGroups, DeleteSchdKeyboard)
 from libs.answers import Answers as answ
-from config import TOKEN, USE_LONG_POLLING, URL, WH_SSL_CERT, WH_SSL_PRIV, WH_LISTEN, WH_PORT
+from config import TOKEN, USE_LONG_POLLING, URL, WH_SSL_CERT, WH_SSL_PRIV, WH_PORT
 
 logger = telebot.logger
 telebot.logger.setLevel(logging.ERROR)
@@ -298,4 +298,4 @@ else:
     context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
     context.load_cert_chain(WH_SSL_CERT, WH_SSL_PRIV)
 
-    web.run_app(app, host=WH_LISTEN, port=WH_PORT, ssl_context=context,)
+    web.run_app(app, port=WH_PORT, ssl_context=context,)

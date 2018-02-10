@@ -87,6 +87,7 @@ def sched_on_day(message):
     tommorow = int(message.text == MainKeyboard.btns_text[1])
     msg = answ(message.chat.id).today_msg(tommorow)
     bot.send_message(message.chat.id, msg, parse_mode='Markdown')
+    db.add_message(message.chat.id, message.text)
 
 
 @bot.message_handler(func=lambda msg: msg.text == MainKeyboard.btns_text[2])
@@ -106,6 +107,7 @@ def week_msg(message):
     weekdays = ('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday')
     msg = answ(message.chat.id).week_msg(weekdays[index])
     bot.send_message(message.chat.id, msg, parse_mode='Markdown', reply_markup=MainKeyboard.markup)
+    db.add_message(message.chat.id, message.text)
 
 
 @bot.message_handler(func=lambda msg: msg.text == MainKeyboard.btns_text[3])

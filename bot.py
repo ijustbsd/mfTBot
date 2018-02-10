@@ -6,6 +6,7 @@ Main file. Run it for bot start working.
 import datetime
 import logging
 import ssl
+import time
 
 import telebot
 from aiohttp import web
@@ -182,6 +183,19 @@ def change_msg(message):
     Handler for the command "change timetable"
     '''
     bot.send_message(message.chat.id, answ.develop, reply_markup=MainKeyboard.markup)
+
+
+@bot.message_handler(commands=['sendtoall'])
+def send_to_all(message):
+    '''
+    Handler for the "/sendtoall" command.
+    '''
+    users = db.get_users_list()
+    text = message.text.replace('/sendtoall', '')
+    if text:
+        for i in users:
+            bot.send_message(i, text, parse_mode='Markdown', reply_markup=MainKeyboard.markup)
+            time.sleep(0.05)
 
 
 @bot.message_handler(func=lambda msg: True)

@@ -92,3 +92,9 @@ class DBManager():
         #     'text': ('qualification', 'course', 'group')
         # })
         return result
+
+    def get_users_list(self):
+        result = set()
+        for i in self.u_ttables.find():
+            result.update([i['chatid'],])
+        return result

@@ -8,12 +8,15 @@ from libs.db import DBManager
 def _formatter(lessons):
     result = ''
     for l in lessons:
-        result += '{num}. {title} {hall}\n'.format(
-            num=l[0],
-            title=l[1] or '-',
-            hall='\[Ауд. ' + l[2] + ']' if l[2] else '')
-    if result == '. - \n':
-        result = 'Выходной :)'
+        result += '{num}. {title}\n'.format(num = l[0], title = l[1] or '-')
+        if l[2] or l[3]:
+            result += ' ' * 3
+            if l[2] and l[3]:
+                result += '`({}, {})`\n'.format(l[2], l[3])
+            else:
+                result += '`({})`\n'.format(l[2] or l[3])
+    if result == '1. Выходной\n':
+        result = 'Выходной \u263A'
     return result
 
 class Answers():

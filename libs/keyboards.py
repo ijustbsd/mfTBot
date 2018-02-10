@@ -79,7 +79,7 @@ class QualKeyboard:
     markup = types.InlineKeyboardMarkup()
     markup.row(
         types.InlineKeyboardButton(text='СПО', callback_data='spo'),
-        types.InlineKeyboardButton(text='Бакалавр', callback_data='bach'))
+        types.InlineKeyboardButton(text='Бакалавр', callback_data='bachelors'))
 
 
 class CourseKeyboards:

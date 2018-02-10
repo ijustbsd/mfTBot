@@ -112,7 +112,8 @@ def week_msg(message):
     Handler for the command "schedule for the day of week"
     '''
     index = WeekKeyboard.btns_text.index(message.text)
-    msg = answ(message.chat.id).week_msg(index)
+    weekdays = ('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday')
+    msg = answ(message.chat.id).week_msg(weekdays[index])
     bot.send_message(message.chat.id, msg, parse_mode='Markdown', reply_markup=MainKeyboard.markup)
 
 
@@ -201,7 +202,7 @@ def error_msg(message):
 #  Callbacks handlers
 
 
-@bot.callback_query_handler(func=lambda call: call.data in ('spo', 'bach'))
+@bot.callback_query_handler(func=lambda call: call.data in ('spo', 'bachelors'))
 def set_qual(call):
     '''
     Handler for callback with choice of qualification
@@ -245,7 +246,7 @@ def set_course(call):
             '3': SpoGroups.third,
             '4': SpoGroups.fourth
         },
-        'bach': {
+        'bachelors': {
             '1': BachelorsGroups.first,
             '2': BachelorsGroups.second,
             '3': BachelorsGroups.third,

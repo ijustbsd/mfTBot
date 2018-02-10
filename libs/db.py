@@ -14,7 +14,7 @@ class DBManager():
             self.client = pymongo.MongoClient()
         except pymongo.errors.ConnectionFailure as e:
             print(e)
-        self.db = self.client.mfbot_db
+        self.db = self.client.vsumfbot
         #  Collections
         self.g_ttables = self.db.general_timetables
         self.u_ttables = self.db.users_timetables
@@ -56,14 +56,14 @@ class DBManager():
 
     def today_timetable(self, chatid, tomorrow=0):
         today = datetime.date.today() + datetime.timedelta(days=tomorrow)
-        weekday = today.weekday()
+        weekday = today.strftime("%A").lower()
         is_numerator = today.isocalendar()[1] % 2
         result = ()
         for tt in self.u_ttables.find({'chatid': chatid}):
             result += ({
                 '_id': tt['_id'],
                 'text': (tt['qualification_title'], tt['course'], tt['group_title']),
-                'data': tt['data']['numerator' if is_numerator else 'denominator'][weekday]
+                'data': tt['data'][weekday]['numerator' if is_numerator else 'denominator']
             },)
         # Result format
         # result = ({
@@ -74,18 +74,26 @@ class DBManager():
 
 
     def week_timetable(self, chatid, index):
-        days = ('понедельник', 'вторник', 'среду', 'четверг', 'пятницу', 'субботу', 'воскресенье')
-        result = (days[index],)
+        en_to_ru = {
+            'monday': 'понедельник',
+            'tuesday': 'вторник',
+            'wednesday': 'среду',
+            'thursday': 'четверг',
+            'friday': 'пятницу',
+            'saturday': 'субботу',
+            'sunday': 'воскресенье'
+        }
+        result = (en_to_ru[index],)
         for tt in self.u_ttables.find({'chatid': chatid}):
-            if tt['data']['numerator'][index] == tt['data']['denominator'][index]:
+            if tt['data'][index]['numerator'] == tt['data'][index]['denominator']:
                 result += ({
                     'text': (tt['qualification_title'], tt['course'], tt['group_title']),
-                    'data': (tt['data']['numerator'][index],)
+                    'data': (tt['data'][index]['numerator'],)
                 },)
             else:
                 result += ({
                     'text': (tt['qualification_title'], tt['course'], tt['group_title']),
-                    'data': (tt['data']['numerator'][index], tt['data']['denominator'][index])
+                    'data': (tt['data'][index]['numerator'], tt['data'][index]['denominator'])
                 },)
         # Result format
         # result = ('понедельник', {

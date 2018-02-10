@@ -18,16 +18,7 @@ class DBManager():
         #  Collections
         self.g_ttables = self.db.general_timetables
         self.u_ttables = self.db.users_timetables
-        self.users = self.db.users
         self.messages = self.db.messages
-
-
-    def load_user(self, chatid: int):
-        return self.users.find_one({"chatid": chatid})
-
-
-    def update_user(self, data):
-        return self.users.update_one({'chatid': data['chatid']}, {'$set': data}, upsert=True)
 
 
     def add_message(self, chatid: int, text):

@@ -63,17 +63,8 @@ def start_msg(message):
     '''
     Handler for the "/start" command.
     '''
-    if not db.load_user(message.from_user.id):
+    if not db.today_timetable(message.from_user.id):
         bot.send_message(message.chat.id, answ.reg_0, reply_markup=RmKeyboard.markup)
-        user = message.from_user
-        userdata = {
-            'chatid': user.id,
-            'firstname': user.first_name,
-            'lastname': user.last_name,
-            'username': user.username,
-            'regdate': str(datetime.datetime.utcnow())
-        }
-        db.update_user(userdata)
         send_and_save_msg(message.chat.id, answ.reg_1, QualKeyboard.markup)
     else:
         bot.send_message(message.chat.id, answ.start, reply_markup=MainKeyboard.markup)

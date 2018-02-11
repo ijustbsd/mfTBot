@@ -203,8 +203,11 @@ def send_to_all(message):
     text = message.text.replace('/sendtoall', '')
     if text and message.chat.id == 161084366:
         for i in users:
-            bot.send_message(i, text, parse_mode='Markdown', reply_markup=MainKeyboard.markup)
-            time.sleep(0.05)
+            try:
+                bot.send_message(i, text, parse_mode='Markdown', reply_markup=MainKeyboard.markup)
+                time.sleep(0.05)
+            except telebot.apihelper.ApiException:
+                continue
 
 
 @bot.message_handler(func=lambda msg: True)

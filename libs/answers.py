@@ -73,7 +73,7 @@ class Answers():
         result = '*Расписание на {}:*\n'.format('завтра' if tomorrow else 'сегодня')
         group_title = '*({}, {} курс, группа {})*\n' if len(ttable) != 1 else ''
         for tt in ttable:
-            if tt['text'][0] == 'СПО':
+            if tt['text'][0] == 'СПО' or (tt['text'][1] == '5' and tt['text'][2] == 'КМА МАиП'):
                 text = 'Расписание не найдено \U0001F648\n'
                 result += group_title.format(*tt['text']) + text
                 continue
@@ -86,7 +86,7 @@ class Answers():
         result = '*Расписание на ' + ttable[0] + ':*\n'
         group_title = '\n*({}, {} курс, группа {})*\n' if len(ttable) != 1 else ''
         for tt in ttable[1:]:
-            if tt['text'][0] == 'СПО':
+            if tt['text'][0] == 'СПО' or (tt['text'][1] == '5' and tt['text'][2] == 'КМА МАиП'):
                 text = 'Расписание не найдено \U0001F648\n'
                 result += group_title.format(*tt['text']) + text
                 continue

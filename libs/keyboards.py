@@ -139,8 +139,8 @@ class BachelorsGroups:
         types.InlineKeyboardButton(text='КУЧП', callback_data='12'))
     third.row(types.InlineKeyboardButton(text='КММ', callback_data='21'))
     third.row(
-        types.InlineKeyboardButton(text='КМА ММЭ (3.1)', callback_data='31'),
-        types.InlineKeyboardButton(text='КМА ММЭ (3.2)', callback_data='32'),
+        types.InlineKeyboardButton(text='КМА ММЭ', callback_data='31'),
+        # types.InlineKeyboardButton(text='КМА ММЭ (3.2)', callback_data='32'),
         types.InlineKeyboardButton(text='КФА', callback_data='33'))
     third.row(
         types.InlineKeyboardButton(text='КТФ', callback_data='41'),

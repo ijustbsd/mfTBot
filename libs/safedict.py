@@ -14,7 +14,7 @@ class SafeDict:
             self.client = pymongo.MongoClient()
         except pymongo.errors.ConnectionFailure as e:
             print(e)
-        self.db = self.client.mfbot_db
+        self.db = self.client.vsumfbot
         self.dict = self.db.safe_dict
 
 

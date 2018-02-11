@@ -26,6 +26,8 @@ db = DBManager()
 
 users = SafeDict()  # Global storage of users data
 
+last_msg_time = dict()
+
 bot = telebot.TeleBot(TOKEN)
 
 def get_text_from_kb(chat_id, callback):
@@ -55,6 +57,13 @@ def delete_msg(chat_id, text=''):
     if text:
         bot.send_message(chat_id, text)
 
+def send_slowly(chat_id, text, reply_markup=None, parse_mode='Markdown', retry=False):
+    t1 = last_msg_time.get(chat_id) or 0.1
+    t2 = time.time()
+    if t2 - t1 > 0.3:
+        bot.send_message(chat_id, text, reply_markup=reply_markup, parse_mode=parse_mode)
+        last_msg_time[chat_id] = time.time()
+
 
 #  Messages handlers
 
@@ -65,10 +74,10 @@ def start_msg(message):
     Handler for the "/start" command.
     '''
     if not db.today_timetable(message.from_user.id):
-        bot.send_message(message.chat.id, answ.reg_0, reply_markup=RmKeyboard.markup)
+        send_slowly(message.chat.id, answ.reg_0, reply_markup=RmKeyboard.markup)
         send_and_save_msg(message.chat.id, answ.reg_1, QualKeyboard.markup)
     else:
-        bot.send_message(message.chat.id, answ.start, reply_markup=MainKeyboard.markup)
+        send_slowly(message.chat.id, answ.start, reply_markup=MainKeyboard.markup)
 
 
 @bot.message_handler(commands=['help'])
@@ -76,7 +85,7 @@ def help_msg(message):
     '''
     Handler for the "/help" command.
     '''
-    bot.send_message(message.chat.id, answ.help_msg, parse_mode='Markdown')
+    send_slowly(message.chat.id, answ.help_msg, parse_mode='Markdown')
 
 
 @bot.message_handler(func=lambda msg: msg.text == MainKeyboard.btns_text[0])
@@ -87,7 +96,7 @@ def sched_on_day(message):
     '''
     tommorow = int(message.text == MainKeyboard.btns_text[1])
     msg = answ(message.chat.id).today_msg(tommorow)
-    bot.send_message(message.chat.id, msg, parse_mode='Markdown')
+    send_slowly(message.chat.id, msg, parse_mode='Markdown')
     db.add_message(message.chat.id, message.text)
 
 
@@ -96,7 +105,7 @@ def sched_on_week(message):
     '''
     Handler for the command "schedule for week"
     '''
-    bot.send_message(message.chat.id, answ.weekday, reply_markup=WeekKeyboard.markup)
+    send_slowly(message.chat.id, answ.weekday, reply_markup=WeekKeyboard.markup)
 
 
 @bot.message_handler(func=lambda msg: msg.text in WeekKeyboard.btns_text)
@@ -107,7 +116,7 @@ def week_msg(message):
     index = WeekKeyboard.btns_text.index(message.text)
     weekdays = ('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday')
     msg = answ(message.chat.id).week_msg(weekdays[index])
-    bot.send_message(message.chat.id, msg, parse_mode='Markdown', reply_markup=MainKeyboard.markup)
+    send_slowly(message.chat.id, msg, parse_mode='Markdown', reply_markup=MainKeyboard.markup)
     db.add_message(message.chat.id, message.text)
 
 
@@ -116,7 +125,7 @@ def bells_msg(message):
     '''
     Handler for the command "schedule of bells"
     '''
-    bot.send_message(message.chat.id, answ.bells, parse_mode='Markdown')
+    send_slowly(message.chat.id, answ.bells, parse_mode='Markdown')
 
 
 @bot.message_handler(func=lambda msg: msg.text == MainKeyboard.btns_text[4])
@@ -124,7 +133,7 @@ def settings_msg(message):
     '''
     Handler for the command "settings"
     '''
-    bot.send_message(message.chat.id, answ.settings, reply_markup=SettingsKeyboard.markup)
+    send_slowly(message.chat.id, answ.settings, reply_markup=SettingsKeyboard.markup)
 
 
 @bot.message_handler(func=lambda msg: msg.text == SettingsKeyboard.btns_text[0])
@@ -132,7 +141,7 @@ def set_sched(message):
     '''
     Handler for the command "settings of timetable"
     '''
-    bot.send_message(message.chat.id, 'Выберите действие:', reply_markup=SetSchedKeyboard.markup)
+    send_slowly(message.chat.id, 'Выберите действие:', reply_markup=SetSchedKeyboard.markup)
 
 
 @bot.message_handler(func=lambda msg: msg.text == SettingsKeyboard.btns_text[1])
@@ -140,7 +149,7 @@ def feedback_msg(message):
     '''
     Handler for the command "feedback"
     '''
-    bot.send_message(message.chat.id, answ.feedback, reply_markup=MainKeyboard.markup)
+    send_slowly(message.chat.id, answ.feedback, reply_markup=MainKeyboard.markup)
 
 
 @bot.message_handler(func=lambda msg: msg.text == SettingsKeyboard.btns_text[2])
@@ -148,7 +157,7 @@ def updates_msg(message):
     '''
     Handler for the command "updates"
     '''
-    bot.send_message(message.chat.id, answ.updates, reply_markup=MainKeyboard.markup)
+    send_slowly(message.chat.id, answ.updates, reply_markup=MainKeyboard.markup)
 
 
 @bot.message_handler(func=lambda msg: msg.text == SettingsKeyboard.btns_text[3])
@@ -156,7 +165,7 @@ def back_msg(message):
     '''
     Handler for the command "back"
     '''
-    bot.send_message(message.chat.id, answ.back_button, reply_markup=MainKeyboard.markup)
+    send_slowly(message.chat.id, answ.back_button, reply_markup=MainKeyboard.markup)
 
 
 @bot.message_handler(func=lambda msg: msg.text == SetSchedKeyboard.btns_text[0])
@@ -164,7 +173,7 @@ def add_schd(message):
     '''
     Handler for the command "add timetable"
     '''
-    bot.send_message(message.chat.id, answ.add_select, reply_markup=RmKeyboard.markup)
+    send_slowly(message.chat.id, answ.add_select, reply_markup=RmKeyboard.markup)
     send_and_save_msg(message.chat.id, answ.reg_1, QualKeyboard.markup)
 
 
@@ -182,7 +191,7 @@ def change_msg(message):
     '''
     Handler for the command "change timetable"
     '''
-    bot.send_message(message.chat.id, answ.develop, reply_markup=MainKeyboard.markup)
+    send_slowly(message.chat.id, answ.develop, reply_markup=MainKeyboard.markup)
 
 
 @bot.message_handler(commands=['sendtoall'])
@@ -192,7 +201,7 @@ def send_to_all(message):
     '''
     users = db.get_users_list()
     text = message.text.replace('/sendtoall', '')
-    if text:
+    if text and message.chat.id == 161084366:
         for i in users:
             bot.send_message(i, text, parse_mode='Markdown', reply_markup=MainKeyboard.markup)
             time.sleep(0.05)

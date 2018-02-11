@@ -17,7 +17,7 @@ from libs.keyboards import (
     MainKeyboard, WeekKeyboard, SettingsKeyboard, SetSchedKeyboard, RmKeyboard,
     QualKeyboard, CourseKeyboards, BachelorsGroups, SpoGroups, DeleteSchdKeyboard)
 from libs.answers import Answers as answ
-from config import TOKEN, USE_LONG_POLLING, URL, WH_SSL_CERT, WH_SSL_PRIV, WH_PORT
+from config import TOKEN, USE_LONG_POLLING, URL, WH_PORT
 
 logger = telebot.logger
 telebot.logger.setLevel(logging.ERROR)
@@ -281,29 +281,25 @@ def set_group(call):
     delete_msg(call.from_user.id, msg_text)
     bot.send_message(call.from_user.id, answ.reg_4, reply_markup=MainKeyboard.markup)
 
-if USE_LONG_POLLING:
-    bot.polling()
-else:
-    app = web.Application()
+app = web.Application()
 
-    async def handle(request):
-        '''
-        Handler for webhooks
-        '''
-        if request.match_info.get('token') == bot.token:
-            request_body_dict = await request.json()
-            update = telebot.types.Update.de_json(request_body_dict)
-            bot.process_new_updates([update])
-            return web.Response()
-        return web.Response(status=403)
+async def handle(request):
+    '''
+     Handler for webhooks
+    '''
+    if request.match_info.get('token') == bot.token:
+        request_body_dict = await request.json()
+        update = telebot.types.Update.de_json(request_body_dict)
+        bot.process_new_updates([update])
+        return web.Response()
+    return web.Response(status=403)
 
-    app.router.add_post('/{token}/', handle)
+app.router.add_post('/{token}/', handle)
 
+if __name__ == "__main__":
     bot.remove_webhook()
-
-    bot.set_webhook(url=URL, certificate=open(WH_SSL_CERT, 'r'))
-
-    context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
-    context.load_cert_chain(WH_SSL_CERT, WH_SSL_PRIV)
-
-    web.run_app(app, port=WH_PORT, ssl_context=context,)
+    if USE_LONG_POLLING:
+        bot.polling()
+    else:
+        bot.set_webhook(url=URL)
+        web.run_app(app, port=WH_PORT,)

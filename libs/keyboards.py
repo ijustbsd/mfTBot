@@ -159,8 +159,9 @@ class BachelorsGroups:
 
     fifth = types.InlineKeyboardMarkup()  # Fifth course
     fifth.row(
-        types.InlineKeyboardButton(text='КТФ', callback_data='41'),
-        types.InlineKeyboardButton(text='КМА МАиП', callback_data='42'))
+        types.InlineKeyboardButton(text='КММ', callback_data='21'))
+        # types.InlineKeyboardButton(text='КТФ', callback_data='41'),
+        # types.InlineKeyboardButton(text='КМА МАиП', callback_data='42'))
 
 
 class SpoGroups:

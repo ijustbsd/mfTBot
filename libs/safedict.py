@@ -5,13 +5,18 @@ Storage, with synchronizing to database.
 
 import pymongo
 
+from config import DB_USER, DB_PWD, DB_NAME
+
 class SafeDict:
     '''
     Safe dictionary for saving users data
     '''
     def __init__(self):
         try:
-            self.client = pymongo.MongoClient()
+            self.client = pymongo.MongoClient(
+                username=DB_USER,
+                password=DB_PWD,
+                authSource=DB_NAME)
         except pymongo.errors.ConnectionFailure as e:
             print(e)
         self.db = self.client.vsumfbot

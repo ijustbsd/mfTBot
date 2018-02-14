@@ -11,3 +11,7 @@ WH_HOST = '<ip/host where the bot is running>'
 WH_PORT = 8443
 
 URL = "https://{}/{}/".format(WH_HOST, TOKEN)
+
+DB_USER = 'username'
+DB_PWD = 'password'
+DB_NAME = 'vsumfbot'

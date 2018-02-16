@@ -15,7 +15,7 @@ from libs.db import DBManager
 from libs.safedict import SafeDict
 from libs.keyboards import (
     MainKeyboard, WeekKeyboard, SettingsKeyboard, SetSchedKeyboard, RmKeyboard,
-    QualKeyboard, CourseKeyboards, BachelorsGroups, SpoGroups, DeleteSchdKeyboard)
+    QualKeyboard, CourseKeyboards, BachelorsGroups, SpoGroups, MastersGroups, DeleteSchdKeyboard)
 from libs.answers import Answers as answ
 from config import TOKEN, USE_LONG_POLLING, URL, WH_PORT
 
@@ -221,7 +221,7 @@ def error_msg(message):
 #  Callbacks handlers
 
 
-@bot.callback_query_handler(func=lambda call: call.data in ('spo', 'bachelors'))
+@bot.callback_query_handler(func=lambda call: call.data in ('spo', 'bachelors', 'masters'))
 def set_qual(call):
     '''
     Handler for callback with choice of qualification
@@ -230,8 +230,10 @@ def set_qual(call):
     # Send select of course
     if call.data == 'spo':
         markup = CourseKeyboards.spo
-    else:
+    elif call.data == 'bachelors':
         markup = CourseKeyboards.bach
+    elif call.data == 'masters':
+        markup = CourseKeyboards.masters
     msg_text = get_text_from_kb(call.from_user.id, call.data)
     delete_msg(call.from_user.id, msg_text)
     send_and_save_msg(call.from_user.id, answ.reg_2, markup)
@@ -271,6 +273,9 @@ def set_course(call):
             '3': BachelorsGroups.third,
             '4': BachelorsGroups.fourth,
             '5': BachelorsGroups.fifth
+        },
+        'masters': {
+            '1': MastersGroups.first
         }
     }
     markup = markups[users.get(call.from_user.id, 'qual')][call.data]
@@ -279,7 +284,7 @@ def set_course(call):
     send_and_save_msg(call.from_user.id, answ.reg_3, markup)
 
 
-@bot.callback_query_handler(func=lambda call: int(call.data) in range(11, 53))
+@bot.callback_query_handler(func=lambda call: int(call.data) in range(11, 63))
 def set_group(call):
     '''
     Handler for callback with choice of group

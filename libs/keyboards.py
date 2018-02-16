@@ -77,9 +77,9 @@ class QualKeyboard:
     Inline keyboard for select of qualification
     '''
     markup = types.InlineKeyboardMarkup()
-    markup.row(
-        types.InlineKeyboardButton(text='СПО', callback_data='spo'),
-        types.InlineKeyboardButton(text='Бакалавр', callback_data='bachelors'))
+    markup.row(types.InlineKeyboardButton(text='СПО', callback_data='spo'))
+    markup.row(types.InlineKeyboardButton(text='Бакалавр', callback_data='bachelors'))
+    markup.row(types.InlineKeyboardButton(text='Магистр', callback_data='masters'))
 
 
 class CourseKeyboards:
@@ -97,6 +97,9 @@ class CourseKeyboards:
     for i in range(1, 6):
         bach_btns.append(types.InlineKeyboardButton(text=str(i), callback_data=str(i)))
     bach.row(*bach_btns)
+
+    masters = types.InlineKeyboardMarkup()
+    masters.row(types.InlineKeyboardButton(text='1', callback_data='1'))
 
 
 class BachelorsGroups:
@@ -186,6 +189,19 @@ class SpoGroups:
 
     fourth = types.InlineKeyboardMarkup()  # Fourth course
     fourth.row(types.InlineKeyboardButton(text='ПКС', callback_data='11'))
+
+
+class MastersGroups:
+    '''
+    Inline keyboards for masters
+    '''
+    first = types.InlineKeyboardMarkup()  # First course
+    first.row(types.InlineKeyboardButton(text='КАТМА', callback_data='11'))
+    first.row(types.InlineKeyboardButton(text='КУЧП', callback_data='12'))
+    first.row(types.InlineKeyboardButton(text='КМА МАиП', callback_data='42'))
+    first.row(types.InlineKeyboardButton(text='КМА ММЭ', callback_data='31'))
+    first.row(types.InlineKeyboardButton(text='КФА МКМ', callback_data='61'))
+    first.row(types.InlineKeyboardButton(text='КФА МОКН', callback_data='62'))
 
 
 class DeleteSchdKeyboard:
